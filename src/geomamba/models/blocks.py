@@ -1,10 +1,11 @@
-"""Mamba block (variant a). Geometric blocks land here in M2/M3."""
+"""Mamba blocks: shared conv+gate skeleton, SSM core varies by variant."""
 from __future__ import annotations
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from geomamba.models.geo_ssm import GeoS6
 from geomamba.models.s6 import S6
 
 
@@ -16,6 +17,7 @@ class MambaBlock(nn.Module):
         d_conv: int = 4,
         d_state: int = 16,
         scan_mode: str = "chunked",
+        transition: str | None = None,  # None = vanilla S6; "mv"/"rotor" = GeoS6
     ):
         super().__init__()
         d_inner = expand * d_model
@@ -23,7 +25,10 @@ class MambaBlock(nn.Module):
         self.conv1d = nn.Conv1d(
             d_inner, d_inner, d_conv, groups=d_inner, padding=d_conv - 1
         )
-        self.ssm = S6(d_inner, d_state=d_state, scan_mode=scan_mode)
+        if transition is None:
+            self.ssm = S6(d_inner, d_state=d_state, scan_mode=scan_mode)
+        else:
+            self.ssm = GeoS6(d_inner, transition=transition, scan_mode=scan_mode)
         self.out_proj = nn.Linear(d_inner, d_model, bias=False)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

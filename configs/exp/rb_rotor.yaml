@@ -1,0 +1,4 @@
+extends: [rb_mamba.yaml]
+name: rb-rotor
+model:
+  variant: rotor_mamba

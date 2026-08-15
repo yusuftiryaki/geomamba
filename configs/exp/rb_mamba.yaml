@@ -1,0 +1,7 @@
+extends: [osc_baseline.yaml]
+name: rb-mamba
+data:
+  path: data/rigid_body.npz
+  n_train: 1000
+model:
+  variant: mamba

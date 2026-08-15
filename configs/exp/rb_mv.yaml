@@ -1,0 +1,4 @@
+extends: [rb_mamba.yaml]
+name: rb-mv
+model:
+  variant: mv_mamba

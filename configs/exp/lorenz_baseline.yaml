@@ -1,0 +1,5 @@
+extends: [osc_baseline.yaml]
+name: lorenz-mamba
+data:
+  path: data/lorenz.npz
+  n_train: 1000

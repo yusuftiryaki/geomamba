@@ -27,16 +27,20 @@ class ModelConfig:
     heads: list[str] = field(default_factory=lambda: ["forecast"])
 
 
+_VARIANT_TRANSITIONS = {"mamba": None, "mv_mamba": "mv", "rotor_mamba": "rotor"}
+
+
 def _make_block(cfg: ModelConfig) -> nn.Module:
-    if cfg.variant == "mamba":
-        return MambaBlock(
-            cfg.d_model,
-            expand=cfg.expand,
-            d_conv=cfg.d_conv,
-            d_state=cfg.d_state,
-            scan_mode=cfg.scan_mode,
-        )
-    raise ValueError(f"unknown variant: {cfg.variant}")
+    if cfg.variant not in _VARIANT_TRANSITIONS:
+        raise ValueError(f"unknown variant: {cfg.variant}")
+    return MambaBlock(
+        cfg.d_model,
+        expand=cfg.expand,
+        d_conv=cfg.d_conv,
+        d_state=cfg.d_state,
+        scan_mode=cfg.scan_mode,
+        transition=_VARIANT_TRANSITIONS[cfg.variant],
+    )
 
 
 class Backbone(nn.Module):

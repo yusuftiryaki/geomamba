@@ -12,9 +12,14 @@ from pathlib import Path
 
 import numpy as np
 
-from geomamba.data import lorenz, oscillators
+from geomamba.data import faults, lorentz_particle, lorenz, oscillators, rigid_body
 
-SYSTEMS = {"oscillators": oscillators.generate, "lorenz": lorenz.generate}
+SYSTEMS = {
+    "oscillators": oscillators.generate,
+    "lorenz": lorenz.generate,
+    "rigid_body": rigid_body.generate,
+    "lorentz_particle": lorentz_particle.generate,
+}
 
 
 def build(system: str, out: Path, n_train: int, n_val: int, n_test: int,
@@ -22,7 +27,10 @@ def build(system: str, out: Path, n_train: int, n_val: int, n_test: int,
     gen = SYSTEMS[system]
     splits = {}
     for i, (name, n) in enumerate([("train", n_train), ("val", n_val), ("test", n_test)]):
-        splits[name] = gen(n, length, seed=seed + 1000 * i)["x"]
+        result = gen(n, length, seed=seed + 1000 * i)
+        splits[name] = result["x"]
+        if "params" in result:
+            splits[f"{name}_params"] = result["params"]
     out.parent.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(out, **splits)
     print(f"{out}: " + ", ".join(f"{k}={v.shape}" for k, v in splits.items()))
@@ -39,7 +47,20 @@ def main() -> None:
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--smoke", action="store_true",
                     help="tiny oscillator dataset for smoke tests")
+    ap.add_argument("--anomalous", action="store_true",
+                    help="generate an anomalous test set (x + labels) instead")
     args = ap.parse_args()
+
+    if args.anomalous:
+        if args.system not in faults.ANOMALOUS or not args.out:
+            ap.error("--anomalous needs --system rigid_body|lorentz_particle and --out")
+        result = faults.ANOMALOUS[args.system](args.n_test, args.length,
+                                               seed=args.seed + 9999)
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        np.savez_compressed(args.out, **result)
+        n_anom = int((result["labels"].max(axis=1) > 0.5).sum())
+        print(f"{args.out}: x={result['x'].shape}, anomalous={n_anom}/{len(result['x'])}")
+        return
 
     if args.smoke:
         build("oscillators", Path("data/smoke_oscillators.npz"),
