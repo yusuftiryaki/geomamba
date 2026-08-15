@@ -1,0 +1,18 @@
+extends: [../base.yaml]
+name: smoke
+data:
+  path: data/smoke_oscillators.npz
+model:
+  variant: mamba
+  d_model: 32
+  n_layers: 2
+  d_state: 8
+trainer:
+  steps: 200
+  batch_size: 8
+  compile: false  # compile warmup would dominate a 200-step smoke run
+  warmup_steps: 20
+  eval_every: 100
+  log_every: 20
+  rollout_context: 32
+  rollout_horizons: [1, 10, 50]

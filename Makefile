@@ -16,6 +16,7 @@ test: up
 	docker compose exec -T geomamba pytest
 
 smoke: up
+	docker compose exec -T geomamba sh -c "test -f data/smoke_oscillators.npz || python scripts/generate_data.py --smoke"
 	docker compose exec -T geomamba python scripts/train.py --config configs/exp/smoke.yaml
 
 clean:

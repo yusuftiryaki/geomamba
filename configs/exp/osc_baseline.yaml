@@ -1,0 +1,19 @@
+extends: [../base.yaml]
+name: osc-mamba
+data:
+  path: data/oscillators.npz
+  n_train: 1000
+# M1-calibrated defaults for ARM CPU: ~0.9 s/step with chunked scan + compile
+model:
+  variant: mamba
+  d_model: 64
+  n_layers: 3
+  d_state: 8
+  scan_mode: chunked
+trainer:
+  steps: 10000
+  batch_size: 8
+  compile: true
+  eval_every: 2000
+  rollout_context: 64
+  rollout_horizons: [1, 10, 50]
