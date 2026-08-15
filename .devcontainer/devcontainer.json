@@ -1,0 +1,21 @@
+{
+  "name": "geomamba",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "geomamba",
+  "workspaceFolder": "/workspace",
+  "remoteUser": "dev",
+  "postCreateCommand": "pytest -q tests/test_cayley.py",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-toolsai.jupyter"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.analysis.extraPaths": ["/workspace/src"]
+      }
+    }
+  }
+}

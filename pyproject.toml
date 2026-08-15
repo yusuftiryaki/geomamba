@@ -1,0 +1,31 @@
+[project]
+name = "geomamba"
+version = "0.0.1"
+description = "Full Geometric Mamba: Clifford-algebra state transitions as an inductive bias for physical time series"
+requires-python = ">=3.12"
+dependencies = [
+    "torch==2.5.1",
+    "numpy==2.1.*",
+    "scipy==1.14.*",
+    "einops==0.8.*",
+    "matplotlib==3.9.*",
+    "pandas==2.2.*",
+    "pyyaml>=6.0",
+    "tqdm>=4.66",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==8.*"]
+# Optional reference oracle; numba/llvmlite may not build on aarch64 — tests skip if missing.
+oracle = ["clifford"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

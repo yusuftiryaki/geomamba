@@ -1,0 +1,15 @@
+services:
+  geomamba:
+    build: .
+    image: geomamba:dev
+    container_name: geomamba
+    user: dev
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+    # Hard caps: this VM also runs production containers.
+    cpus: "3.0"
+    mem_limit: 8g
+    pids_limit: 512
+    init: true
+    command: ["sleep", "infinity"]
