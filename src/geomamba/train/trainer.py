@@ -60,7 +60,15 @@ class Trainer:
         train_model = model
         if c.compile:
             try:
-                train_model = torch.compile(model)
+                candidate = torch.compile(model)
+                # trigger fwd+bwd compilation now: backend failures surface
+                # lazily, and a 6h queued run must fall back, not crash
+                warm = next(iter(train_loader))
+                torch.nn.functional.mse_loss(
+                    candidate(warm["input"])["forecast"], warm["target"]
+                ).backward()
+                model.zero_grad(set_to_none=True)
+                train_model = candidate
             except Exception as e:  # pragma: no cover - platform dependent
                 self.run.log(event="compile_failed", error=repr(e))
 
