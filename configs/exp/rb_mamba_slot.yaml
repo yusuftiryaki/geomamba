@@ -3,5 +3,6 @@ name: rb-mamba-slot
 model:
   variant: mamba
   d_model: 72       # slotting needs d_model divisible by 8
+  d_state: 16       # param match: 125.1k vs rotor 129.4k (-3.4%)
   geo_embed: true   # slotting WITHOUT the rotor constraint (factorial ablation)
   slot_grade: 2
