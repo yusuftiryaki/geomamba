@@ -2,3 +2,4 @@ extends: [rb_mamba.yaml]
 name: rb-mv
 model:
   variant: mv_mamba
+  d_model: 64  # geo variants keep d64; baseline uses d72 to match params

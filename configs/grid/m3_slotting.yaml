@@ -1,0 +1,38 @@
+# Representation ablation: does typing the input geometrically matter?
+#   rotor        : learned free embedding (reference, 129.4k)
+#   rotor-slot   : omega slotted into grade-2 blades (128.9k)
+#   rotor-fullgeo: slotting + Clifford-linear mixing + grade-wise norm (132.6k)
+#   mamba72      : param-matched baseline (125.6k)
+# All at N=300, 3 seeds. Run with Save & Run All.
+datasets:
+  - {system: rigid_body, out: data/rigid_body.npz, n_train: 3000}
+  - {system: rigid_body, out: data/rigid_body_anom.npz, anomalous: true}
+
+runs:
+  - {name: rb-slot-n300-s0, config: configs/exp/rb_rotor_slot.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=0]}
+  - {name: rb-fullgeo-n300-s0, config: configs/exp/rb_rotor_fullgeo.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=0]}
+  - {name: rb-slot-n300-s1, config: configs/exp/rb_rotor_slot.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=1]}
+  - {name: rb-fullgeo-n300-s1, config: configs/exp/rb_rotor_fullgeo.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=1]}
+  - {name: rb-slot-n300-s2, config: configs/exp/rb_rotor_slot.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=2]}
+  - {name: rb-fullgeo-n300-s2, config: configs/exp/rb_rotor_fullgeo.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=2]}
+  - {name: rb-mamba76-n300-s0, config: configs/exp/rb_mamba.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=0]}
+  - {name: rb-mamba76-n300-s1, config: configs/exp/rb_mamba.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=1]}
+  - {name: rb-mamba76-n300-s2, config: configs/exp/rb_mamba.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=2]}

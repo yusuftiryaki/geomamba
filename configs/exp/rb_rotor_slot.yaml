@@ -1,0 +1,5 @@
+extends: [rb_rotor.yaml]
+name: rb-rotor-slot
+model:
+  geo_embed: true   # omega slotted into grade-2 (bivector) blades
+  slot_grade: 2

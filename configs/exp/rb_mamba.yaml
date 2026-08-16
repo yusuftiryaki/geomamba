@@ -5,6 +5,6 @@ data:
   n_train: 1000
 model:
   variant: mamba
-  d_model: 72  # param-matched to rotor (125.6k vs 129.4k)
+  d_model: 76  # param-matched to rotor: 128.1k vs 129.4k (-1.1%)
 trainer:
   eval_every: 1000

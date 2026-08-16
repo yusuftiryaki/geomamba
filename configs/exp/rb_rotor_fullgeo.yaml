@@ -1,0 +1,7 @@
+extends: [rb_rotor.yaml]
+name: rb-rotor-fullgeo
+model:
+  geo_embed: true
+  geo_proj: true    # grade-respecting channel mixing + grade-wise norm
+  slot_grade: 2
+  d_model: 96       # param-matched: 132.6k vs rotor 129.4k

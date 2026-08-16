@@ -11,7 +11,9 @@ from dataclasses import dataclass, field
 import torch
 import torch.nn as nn
 
+from geomamba.algebra import Algebra
 from geomamba.models.blocks import MambaBlock
+from geomamba.models.geo_layers import GeoEmbed, GeoHead, GradeRMSNorm
 
 
 @dataclass
@@ -27,6 +29,11 @@ class ModelConfig:
     dt_min: float = 1e-3
     dt_max: float = 1e-1
     lambda_init: float = -3.0
+    # representation ablation: slot inputs into blade positions of slot_grade
+    # and keep channel mixing / normalisation grade-respecting
+    geo_embed: bool = False
+    geo_proj: bool = False
+    slot_grade: int = 2  # rigid-body omega and B fields are bivectors
     heads: list[str] = field(default_factory=lambda: ["forecast"])
 
 
@@ -46,25 +53,55 @@ def _make_block(cfg: ModelConfig) -> nn.Module:
         dt_min=cfg.dt_min,
         dt_max=cfg.dt_max,
         lambda_init=cfg.lambda_init,
+        geo_proj=cfg.geo_proj,
     )
 
 
 class Backbone(nn.Module):
     def __init__(self, cfg: ModelConfig):
         super().__init__()
-        self.embed = nn.Linear(cfg.n_features, cfg.d_model)
-        self.norms = nn.ModuleList(
-            nn.RMSNorm(cfg.d_model) for _ in range(cfg.n_layers)
-        )
+        self.geo_embed = cfg.geo_embed
+        if cfg.geo_embed:
+            al = Algebra.get(3, 0)
+            if cfg.d_model % al.dim:
+                raise ValueError("geo_embed needs d_model divisible by 8")
+            self.mv_dim, n_ch = al.dim, cfg.d_model // al.dim
+            self.embed = GeoEmbed(al, cfg.n_features, n_ch, grade=cfg.slot_grade)
+            make_norm = lambda: GradeRMSNorm(al, n_ch)  # noqa: E731
+        else:
+            self.embed = nn.Linear(cfg.n_features, cfg.d_model)
+            make_norm = lambda: nn.RMSNorm(cfg.d_model)  # noqa: E731
+        self.norms = nn.ModuleList(make_norm() for _ in range(cfg.n_layers))
         self.blocks = nn.ModuleList(_make_block(cfg) for _ in range(cfg.n_layers))
-        self.final_norm = nn.RMSNorm(cfg.d_model)
+        self.final_norm = make_norm()
+
+    def _norm(self, norm, h: torch.Tensor) -> torch.Tensor:
+        if not self.geo_embed:
+            return norm(h)
+        b, l, d = h.shape
+        return norm(h.reshape(b, l, d // self.mv_dim, self.mv_dim)).reshape(b, l, d)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """x: [B, L, F] -> h: [B, L, d_model]"""
         h = self.embed(x)
+        if self.geo_embed:
+            h = h.reshape(*h.shape[:-2], -1)
         for norm, block in zip(self.norms, self.blocks):
-            h = h + block(norm(h))
-        return self.final_norm(h)
+            h = h + block(self._norm(norm, h))
+        return self._norm(self.final_norm, h)
+
+
+class _GeoHeadFlat(nn.Module):
+    """GeoHead on a flat [B, L, d_model] hidden state."""
+
+    def __init__(self, al: Algebra, c_in: int, n_features: int, grade: int):
+        super().__init__()
+        self.mv_dim = al.dim
+        self.head = GeoHead(al, c_in, n_features, grade=grade)
+
+    def forward(self, h: torch.Tensor) -> torch.Tensor:
+        b, l, d = h.shape
+        return self.head(h.reshape(b, l, d // self.mv_dim, self.mv_dim))
 
 
 class GeoMamba(nn.Module):
@@ -74,7 +111,13 @@ class GeoMamba(nn.Module):
         self.backbone = Backbone(cfg)
         self.heads = nn.ModuleDict()
         if "forecast" in cfg.heads:
-            self.heads["forecast"] = nn.Linear(cfg.d_model, cfg.n_features)
+            if cfg.geo_embed:
+                al = Algebra.get(3, 0)
+                self.heads["forecast"] = _GeoHeadFlat(
+                    al, cfg.d_model // al.dim, cfg.n_features, cfg.slot_grade
+                )
+            else:
+                self.heads["forecast"] = nn.Linear(cfg.d_model, cfg.n_features)
         if "anomaly" in cfg.heads:
             self.heads["anomaly"] = nn.Linear(cfg.d_model, 1)
 
