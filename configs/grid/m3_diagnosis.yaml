@@ -1,0 +1,32 @@
+# Diagnosis grid: source of the rotor energy-drift floor (~3.5-4.5) + fair baseline.
+# - lambda_init sweep: -12 ~ pure-conservative transition (decay ~ 6e-6/step),
+#   -6 ~ 0.0025, -1 ~ 0.31. Default -3 (~0.05) already has 3 seeds in the decision grid.
+# - dt_max sweep: rotation-step scale, the second suspect.
+# - mamba72: parameter-matched baseline (125.6k vs rotor 129.4k).
+datasets:
+  - {system: rigid_body, out: data/rigid_body.npz, n_train: 3000}
+  - {system: rigid_body, out: data/rigid_body_anom.npz, anomalous: true}
+
+runs:
+  - {name: rot-lam12-n300-s0, config: configs/exp/rb_rotor.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=0, model.lambda_init=-12]}
+  - {name: rot-lam12-n300-s1, config: configs/exp/rb_rotor.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=1, model.lambda_init=-12]}
+  - {name: rot-lam6-n300-s0, config: configs/exp/rb_rotor.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=0, model.lambda_init=-6]}
+  - {name: rot-lam6-n300-s1, config: configs/exp/rb_rotor.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=1, model.lambda_init=-6]}
+  - {name: rot-lam1-n300-s0, config: configs/exp/rb_rotor.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=0, model.lambda_init=-1]}
+  - {name: rot-lam1-n300-s1, config: configs/exp/rb_rotor.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=1, model.lambda_init=-1]}
+  - {name: rot-dtmax005-n300-s0, config: configs/exp/rb_rotor.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=0, model.dt_max=0.05]}
+  - {name: rot-dtmax02-n300-s0, config: configs/exp/rb_rotor.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=0, model.dt_max=0.2]}
+  - {name: mamba72-n300-s0, config: configs/exp/rb_mamba.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=0, model.d_model=72]}
+  - {name: mamba72-n300-s1, config: configs/exp/rb_mamba.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=1, model.d_model=72]}
+  - {name: mamba72-n300-s2, config: configs/exp/rb_mamba.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=2, model.d_model=72]}

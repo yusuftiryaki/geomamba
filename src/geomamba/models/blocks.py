@@ -18,6 +18,9 @@ class MambaBlock(nn.Module):
         d_state: int = 16,
         scan_mode: str = "chunked",
         transition: str | None = None,  # None = vanilla S6; "mv"/"rotor" = GeoS6
+        dt_min: float = 1e-3,
+        dt_max: float = 1e-1,
+        lambda_init: float = -3.0,
     ):
         super().__init__()
         d_inner = expand * d_model
@@ -26,9 +29,11 @@ class MambaBlock(nn.Module):
             d_inner, d_inner, d_conv, groups=d_inner, padding=d_conv - 1
         )
         if transition is None:
-            self.ssm = S6(d_inner, d_state=d_state, scan_mode=scan_mode)
+            self.ssm = S6(d_inner, d_state=d_state, scan_mode=scan_mode,
+                          dt_min=dt_min, dt_max=dt_max)
         else:
-            self.ssm = GeoS6(d_inner, transition=transition, scan_mode=scan_mode)
+            self.ssm = GeoS6(d_inner, transition=transition, scan_mode=scan_mode,
+                             dt_min=dt_min, dt_max=dt_max, lambda_init=lambda_init)
         self.out_proj = nn.Linear(d_inner, d_model, bias=False)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

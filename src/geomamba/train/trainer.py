@@ -118,6 +118,13 @@ class Trainer:
 
         model.eval()
         self.run.save_ckpt("last", model, step=step)
+        # diagnosis: learned dissipation rates of geometric SSMs
+        lam = [torch.nn.functional.softplus(m.lambda_raw).detach()
+               for m in model.modules() if hasattr(m, "lambda_raw")]
+        if lam:
+            lam = torch.cat(lam)
+            self.run.log(event="lambda_stats", mean=lam.mean().item(),
+                         min=lam.min().item(), max=lam.max().item())
         persistence = M.persistence_mse(val_loader)
         self.run.log(step=step, split="final", best_val_mse=best_val,
                      persistence_mse=persistence,

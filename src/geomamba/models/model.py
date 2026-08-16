@@ -24,6 +24,9 @@ class ModelConfig:
     d_state: int = 16
     d_conv: int = 4
     scan_mode: str = "chunked"
+    dt_min: float = 1e-3
+    dt_max: float = 1e-1
+    lambda_init: float = -3.0
     heads: list[str] = field(default_factory=lambda: ["forecast"])
 
 
@@ -40,6 +43,9 @@ def _make_block(cfg: ModelConfig) -> nn.Module:
         d_state=cfg.d_state,
         scan_mode=cfg.scan_mode,
         transition=_VARIANT_TRANSITIONS[cfg.variant],
+        dt_min=cfg.dt_min,
+        dt_max=cfg.dt_max,
+        lambda_init=cfg.lambda_init,
     )
 
 

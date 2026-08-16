@@ -44,6 +44,7 @@ class GeoS6(nn.Module):
         dt_rank: int | None = None,
         dt_min: float = 1e-3,
         dt_max: float = 1e-1,
+        lambda_init: float = -3.0,
         scan_mode: str = "chunked",
     ):
         super().__init__()
@@ -85,8 +86,8 @@ class GeoS6(nn.Module):
 
         # scalar/pseudoscalar blade positions (sandwich-invariant grades)
         self.sp_indices = [0, self.al.dim - 1]
-        # near-conservative init: softplus(lambda_raw) ~ 0.05
-        self.lambda_raw = nn.Parameter(torch.full((C,), -3.0))
+        # dissipation init: softplus(lambda_init); -3 ~ 0.05, -12 ~ pure-conservative
+        self.lambda_raw = nn.Parameter(torch.full((C,), float(lambda_init)))
         self.D = nn.Parameter(torch.ones(d_inner))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
