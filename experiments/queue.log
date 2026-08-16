@@ -1,1 +1,60 @@
 === probe rb_mamba ===
+run dir: experiments/runs/probe-rb_mamba-20260816-074726  params: 26,275
+{'best_val_mse': 0.00044551110052755877, 'persistence_mse': 0.0009471939032276471, 'steps': 2500, 'wall_seconds': 406.4641797542572}
+=== eval experiments/runs/probe-rb_mamba-20260816-074726 ===
+{
+  "run": "experiments/runs/probe-rb_mamba-20260816-074726",
+  "ckpt_step": 2500,
+  "test_mse": 0.0005509209137720367,
+  "persistence_mse": 0.0011093496105944118,
+  "rollout_mse_h1": 0.0003878857921032856,
+  "rollout_mse_h10": 0.016156458854675294,
+  "rollout_mse_h50": 0.35284744421641034,
+  "rollout_mse_h100": 1.2595146846771241,
+  "energy_drift": 19.706342697143555,
+  "momentum_drift": 1.7777056694030762,
+  "anomaly_auroc": 0.5109741711140572,
+  "detection_delay": 121.88679245283019,
+  "anomaly_auroc_2s": 0.6000798761599859,
+  "detection_delay_2s": 117.82075471698113
+}
+=== probe rb_rotor ===
+run dir: experiments/runs/probe-rb_rotor-20260816-075704  params: 33,139
+{'best_val_mse': 0.0003656118466703144, 'persistence_mse': 0.0009471939032276471, 'steps': 2500, 'wall_seconds': 408.55946373939514}
+=== eval experiments/runs/probe-rb_rotor-20260816-075704 ===
+{
+  "run": "experiments/runs/probe-rb_rotor-20260816-075704",
+  "ckpt_step": 2500,
+  "test_mse": 0.0006340716425329447,
+  "persistence_mse": 0.0011093496105944118,
+  "rollout_mse_h1": 0.00036238251050235704,
+  "rollout_mse_h10": 0.01304268855601549,
+  "rollout_mse_h50": 0.24812853177388508,
+  "rollout_mse_h100": 0.775550438563029,
+  "energy_drift": 7.639466285705566,
+  "momentum_drift": 1.6090965270996094,
+  "anomaly_auroc": 0.5371202640362562,
+  "detection_delay": 121.85849056603773,
+  "anomaly_auroc_2s": 0.5955087627519353,
+  "detection_delay_2s": 120.28301886792453
+}
+=== probe rb_mv ===
+run dir: experiments/runs/probe-rb_mv-20260816-080826  params: 42,355
+{'best_val_mse': 0.0004163472027964114, 'persistence_mse': 0.0009471939032276471, 'steps': 2500, 'wall_seconds': 383.6436924934387}
+=== eval experiments/runs/probe-rb_mv-20260816-080826 ===
+{
+  "run": "experiments/runs/probe-rb_mv-20260816-080826",
+  "ckpt_step": 2500,
+  "test_mse": 0.0036790388127168018,
+  "persistence_mse": 0.0011093496105944118,
+  "rollout_mse_h1": 0.0003888875119931375,
+  "rollout_mse_h10": 0.015332039011021455,
+  "rollout_mse_h50": 0.2735021511713664,
+  "rollout_mse_h100": 0.7293992106119792,
+  "energy_drift": 12.605722427368164,
+  "momentum_drift": 1.8264578580856323,
+  "anomaly_auroc": 0.6581048012345058,
+  "detection_delay": 121.37735849056604,
+  "anomaly_auroc_2s": 0.6883859810248281,
+  "detection_delay_2s": 123.37735849056604
+}
