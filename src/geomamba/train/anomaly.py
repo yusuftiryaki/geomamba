@@ -49,3 +49,13 @@ def detection_delay(
         after = s_i[max(tau - 1, 0) :] > thr
         delays.append(int(np.argmax(after)) if after.any() else len(after))
     return float(np.mean(delays))
+
+
+def two_sided_scores(scores: np.ndarray, calib_frac: float = 0.25) -> np.ndarray:
+    """|log s_t - median(log s)| over each trajectory's early (pre-anomaly)
+    window. Catches anomalies that make prediction EASIER (lower residual),
+    e.g. an inertia increase slowing the dynamics."""
+    log_s = np.log(scores + 1e-12)
+    n_calib = max(1, int(scores.shape[1] * calib_frac))
+    ref = np.median(log_s[:, :n_calib], axis=1, keepdims=True)
+    return np.abs(log_s - ref)

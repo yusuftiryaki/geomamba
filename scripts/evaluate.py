@@ -32,7 +32,10 @@ def main() -> None:
 
     cfg = yaml.safe_load((args.run / "config.yaml").read_text())
     model = GeoMamba(ModelConfig(n_features=cfg["n_features"], **cfg.get("model", {})))
-    ckpt = torch.load(args.run / "best.pt", map_location="cpu", weights_only=True)
+    ckpt_path = args.run / "best.pt"
+    if not ckpt_path.exists():  # run hit the wall-clock cap before first eval
+        ckpt_path = args.run / "last.pt"
+    ckpt = torch.load(ckpt_path, map_location="cpu", weights_only=True)
     model.load_state_dict(ckpt["model"])
     model.eval()
     torch.set_num_threads(cfg.get("trainer", {}).get("num_threads", 3))
@@ -75,6 +78,9 @@ def main() -> None:
         labels = araw["labels"][:, 1:]
         result["anomaly_auroc"] = A.auroc(scores, labels)
         result["detection_delay"] = A.detection_delay(scores, labels)
+        ts = A.two_sided_scores(scores)
+        result["anomaly_auroc_2s"] = A.auroc(ts, labels)
+        result["detection_delay_2s"] = A.detection_delay(ts, labels)
 
     (args.run / "eval.json").write_text(json.dumps(result, indent=2))
     print(json.dumps(result, indent=2))

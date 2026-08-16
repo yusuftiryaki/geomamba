@@ -5,3 +5,5 @@ data:
   n_train: 1000
 model:
   variant: mamba
+trainer:
+  eval_every: 1000

@@ -104,6 +104,7 @@ class Trainer:
                     max_batches=c.eval_rollout_batches,
                 )
                 self.run.log(step=step, split="val", mse=val_mse, **roll)
+                self.run.save_ckpt("last", model, step=step)  # crash resilience
                 if val_mse < best_val:
                     best_val = val_mse
                     self.run.save_ckpt("best", model, step=step, val_mse=val_mse)

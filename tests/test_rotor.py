@@ -97,3 +97,40 @@ def test_bivector_exp_rejects_unsupported_signature():
     al = Algebra.get(1, 3)
     with pytest.raises(NotImplementedError):
         rotor.bivector_exp(al, torch.randn(2, len(al.bivector_indices)))
+
+
+def test_rotation_matrix_matches_sandwich():
+    al = Algebra.get(3, 0)
+    torch.manual_seed(3)
+    g = torch.randn(32, 3, dtype=torch.float64)
+    dt = torch.rand(32, dtype=torch.float64) * 2
+
+    def biv_to_axis(c):
+        return torch.stack([c[..., 2], -c[..., 1], c[..., 0]], dim=-1)
+
+    Q = rotor.rotation_matrix(g, dt)
+    R = rotor.bivector_exp(al, -0.5 * dt.unsqueeze(-1) * g)
+
+    v = torch.randn(32, 3, dtype=torch.float64)
+    out_v = rotor.sandwich(al, R, mv.embed_grade(al, v, 1))
+    torch.testing.assert_close(
+        mv.extract_grade(al, out_v, 1), (Q @ v.unsqueeze(-1)).squeeze(-1)
+    )
+
+    c = torch.randn(32, 3, dtype=torch.float64)
+    out_b = rotor.sandwich(al, R, mv.embed_grade(al, c, 2))
+    expected = biv_to_axis((Q @ biv_to_axis(c).unsqueeze(-1)).squeeze(-1))
+    torch.testing.assert_close(mv.extract_grade(al, out_b, 2), expected)
+
+    # grades 0 and 3 are invariant under the sandwich
+    sp = torch.randn(32, 2, dtype=torch.float64)
+    x = mv.embed_grade(al, sp[:, :1], 0) + mv.embed_grade(al, sp[:, 1:], 3)
+    torch.testing.assert_close(rotor.sandwich(al, R, x), x)
+
+    # orthogonality and differentiability at zero rotation
+    torch.testing.assert_close(
+        Q @ Q.transpose(-1, -2), torch.eye(3, dtype=torch.float64).expand_as(Q)
+    )
+    g0 = torch.zeros(4, 3, dtype=torch.float64, requires_grad=True)
+    rotor.rotation_matrix(g0, torch.ones(4, dtype=torch.float64)).sum().backward()
+    assert torch.isfinite(g0.grad).all()

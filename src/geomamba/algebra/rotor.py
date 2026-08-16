@@ -47,6 +47,42 @@ def sandwich(al: Algebra, r: torch.Tensor, x: torch.Tensor) -> torch.Tensor:
     return mv.gp(al, mv.gp(al, r, x), mv.reverse(al, r))
 
 
+def rotation_matrix(g: torch.Tensor, dt: torch.Tensor) -> torch.Tensor:
+    """SO(3) matrix of the sandwich R x R~ with R = exp(-dt/2 * g) in Cl(3,0).
+
+    g: bivector generator coefficients [..., 3] over [e12, e13, e23];
+    dt: step size [...]. In Cl(3,0) the sandwich acts as the identity on
+    grades 0 and 3 and as the SAME rotation Q on the vector and bivector
+    grades (duality: R(In)R~ = I(RnR~)), so Q fully determines it.
+
+    Axis (unnormalized) is the dual vector a = (g23, -g13, g12), angle
+    theta = dt*|g|. Rodrigues with sinc-style Taylor guards keeps this
+    differentiable at zero rotation:
+        Q = I + dt*sinc(theta)*[a]x + dt^2 * (1-cos theta)/theta^2 * [a]x^2
+    """
+    a = torch.stack([g[..., 2], -g[..., 1], g[..., 0]], dim=-1)
+    theta = dt * torch.linalg.vector_norm(g, dim=-1)
+
+    small = theta < _SINC_EPS
+    safe = torch.where(small, torch.ones_like(theta), theta)
+    sinc = torch.where(small, 1 - theta**2 / 6, torch.sin(safe) / safe)
+    cosc = torch.where(small, 0.5 - theta**2 / 24, (1 - torch.cos(safe)) / safe**2)
+
+    zeros = torch.zeros_like(a[..., 0])
+    K = torch.stack(
+        [
+            torch.stack([zeros, -a[..., 2], a[..., 1]], dim=-1),
+            torch.stack([a[..., 2], zeros, -a[..., 0]], dim=-1),
+            torch.stack([-a[..., 1], a[..., 0], zeros], dim=-1),
+        ],
+        dim=-2,
+    )
+    eye = torch.eye(3, dtype=g.dtype, device=g.device).expand_as(K)
+    dt_ = dt[..., None, None]
+    return eye + dt_ * sinc[..., None, None] * K \
+        + dt_**2 * cosc[..., None, None] * (K @ K)
+
+
 def sandwich_matrix(al: Algebra, r: torch.Tensor) -> torch.Tensor:
     """S(R) with (R x R~) == S(R) @ x. Shape [..., dim, dim].
 

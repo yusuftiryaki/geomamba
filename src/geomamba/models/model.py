@@ -27,7 +27,7 @@ class ModelConfig:
     heads: list[str] = field(default_factory=lambda: ["forecast"])
 
 
-_VARIANT_TRANSITIONS = {"mamba": None, "mv_mamba": "mv", "rotor_mamba": "rotor"}
+_VARIANT_TRANSITIONS = {"mamba": None, "mv_mamba": "mv", "rotor_mamba": "rotor", "mv8_mamba": "mv8"}
 
 
 def _make_block(cfg: ModelConfig) -> nn.Module:

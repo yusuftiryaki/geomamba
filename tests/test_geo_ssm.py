@@ -13,7 +13,7 @@ def make_model(variant: str) -> GeoMamba:
 
 def test_variants_forward_backward():
     x = torch.randn(2, 32, 3)
-    for variant in ["mv_mamba", "rotor_mamba"]:
+    for variant in ["mv_mamba", "rotor_mamba", "mv8_mamba"]:
         model = make_model(variant)
         out = model(x)["forecast"]
         assert out.shape == (2, 32, 3)
@@ -43,7 +43,7 @@ def test_zero_generator_reduces_to_pure_decay():
     ssm_mv = GeoS6(d_inner=32, transition="mv")
     with torch.no_grad():
         ssm_rotor.gen_proj.weight.zero_()
-        ssm_mv.G.zero_()
+        ssm_mv.gen_proj.weight.zero_()
         for dst, src in [
             (ssm_mv.x_proj, ssm_rotor.x_proj),
             (ssm_mv.dt_proj, ssm_rotor.dt_proj),
