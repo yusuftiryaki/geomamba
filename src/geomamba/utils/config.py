@@ -12,6 +12,21 @@ from typing import Any
 import yaml
 
 
+def _coerce(value: Any) -> Any:
+    """YAML 1.1 parses `1e-4` as a string (it wants `1.0e-4`), which then flows
+    into e.g. the optimiser lr as text. Recover any numeric-looking string."""
+    if not isinstance(value, str):
+        return value
+    try:
+        return int(value)
+    except ValueError:
+        pass
+    try:
+        return float(value)
+    except ValueError:
+        return value
+
+
 def _deep_merge(base: dict, override: dict) -> dict:
     out = dict(base)
     for k, v in override.items():
@@ -35,5 +50,5 @@ def load_config(path: str | Path, overrides: list[str] | None = None) -> dict[st
         parts = key.split(".")
         for p in parts[:-1]:
             node = node.setdefault(p, {})
-        node[parts[-1]] = yaml.safe_load(value)
+        node[parts[-1]] = _coerce(yaml.safe_load(value))
     return merged

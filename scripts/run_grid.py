@@ -73,7 +73,7 @@ def main() -> None:
         suffix += f"-stage{args.only_stage}"
     selected = [r for r in grid["runs"]
                 if args.only_stage is None or r.get("stage", 2) == args.only_stage]
-    rows = []
+    rows, failures = [], []
     for run in selected[shard_k::shard_n]:
         overrides = [str(o) for o in run.get("overrides", [])]
         name = run.get("name") or Path(run["config"]).stem
@@ -83,14 +83,20 @@ def main() -> None:
                 print(f"!! skipping {name}: no run dir for {run['init_from']}")
                 continue
             overrides.append(f"init_from={srcs[-1]}")
-        sh([sys.executable, "scripts/train.py", "--config", run["config"],
-            f"name={name}", *overrides])
-        run_dir = sorted(Path("experiments/runs").glob(f"{name}-*"))[-1]
-        eval_cmd = [sys.executable, "scripts/evaluate.py", "--run", str(run_dir)]
-        if run.get("anom"):
-            eval_cmd += ["--anom", run["anom"]]
-        eval_cmd += [str(a) for a in run.get("eval_args", [])]
-        sh(eval_cmd)
+        try:
+            sh([sys.executable, "scripts/train.py", "--config", run["config"],
+                f"name={name}", *overrides])
+            run_dir = sorted(Path("experiments/runs").glob(f"{name}-*"))[-1]
+            eval_cmd = [sys.executable, "scripts/evaluate.py", "--run", str(run_dir)]
+            if run.get("anom"):
+                eval_cmd += ["--anom", run["anom"]]
+            eval_cmd += [str(a) for a in run.get("eval_args", [])]
+            sh(eval_cmd)
+        except subprocess.CalledProcessError as e:
+            # one bad run must not cost the whole GPU session
+            print(f"!! FAILED {name}: {e}", flush=True)
+            failures.append(name)
+            continue
         row = json.loads((run_dir / "eval.json").read_text())
         row["name"] = name
         row["overrides"] = " ".join(overrides)
@@ -108,6 +114,9 @@ def main() -> None:
                         mirror / f"grid_results{suffix}.csv", index=False)
                 except ImportError:
                     pass
+
+    if failures:
+        print(f"\n!! {len(failures)} run(s) failed: {', '.join(failures)}", flush=True)
 
     try:
         import pandas as pd
