@@ -35,10 +35,19 @@ def sh(args: list[str]) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--grid", required=True, type=Path)
+    ap.add_argument("--data-only", action="store_true",
+                    help="generate datasets and exit (run once before sharding)")
+    ap.add_argument("--skip-data", action="store_true")
+    ap.add_argument("--shard", default=None,
+                    help="'k/n': run only every n-th run starting at k, for "
+                         "one-process-per-GPU parallelism")
     args = ap.parse_args()
     grid = yaml.safe_load(args.grid.read_text())
+    shard_k, shard_n = 0, 1
+    if args.shard:
+        shard_k, shard_n = (int(v) for v in args.shard.split("/"))
 
-    for ds in grid.get("datasets", []):
+    for ds in [] if args.skip_data else grid.get("datasets", []):
         out = Path(ds["out"])
         if out.exists():
             print(f"skip existing {out}")
@@ -54,8 +63,12 @@ def main() -> None:
                     "--n-test", str(ds.get("n_test", 500))]
         sh(cmd)
 
+    if args.data_only:
+        return
+
+    suffix = f"-shard{shard_k}" if shard_n > 1 else ""
     rows = []
-    for run in grid["runs"]:
+    for run in grid["runs"][shard_k::shard_n]:
         overrides = [str(o) for o in run.get("overrides", [])]
         name = run.get("name") or Path(run["config"]).stem
         sh([sys.executable, "scripts/train.py", "--config", run["config"],
@@ -71,14 +84,14 @@ def main() -> None:
         row["overrides"] = " ".join(overrides)
         rows.append(row)
         # incremental aggregate so partial grids are still usable
-        agg = Path("experiments/grid_results.json")
+        agg = Path(f"experiments/grid_results{suffix}.json")
         agg.write_text(json.dumps(rows, indent=2))
 
     try:
         import pandas as pd
 
         df = pd.DataFrame(rows)
-        df.to_csv("experiments/grid_results.csv", index=False)
+        df.to_csv(f"experiments/grid_results{suffix}.csv", index=False)
         cols = [c for c in ["name", "overrides", "test_mse", "rollout_mse_h100",
                             "energy_drift", "momentum_drift", "anomaly_auroc_2s"]
                 if c in df.columns]
