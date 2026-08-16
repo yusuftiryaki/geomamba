@@ -1,0 +1,5 @@
+extends: [particle_baseline.yaml]
+name: lp-mamba76
+model:
+  variant: mamba
+  d_model: 76   # param-matched to rotor (128.1k vs 129.4k)

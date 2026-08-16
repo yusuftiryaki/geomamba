@@ -83,9 +83,19 @@ def main() -> None:
         row["name"] = name
         row["overrides"] = " ".join(overrides)
         rows.append(row)
-        # incremental aggregate so partial grids are still usable
-        agg = Path(f"experiments/grid_results{suffix}.json")
-        agg.write_text(json.dumps(rows, indent=2))
+        # incremental aggregate so partial grids are still usable, mirrored to
+        # the Kaggle output dir so a session timeout cannot lose finished runs
+        payload = json.dumps(rows, indent=2)
+        Path(f"experiments/grid_results{suffix}.json").write_text(payload)
+        for mirror in (Path("/kaggle/working"),):
+            if mirror.is_dir():
+                (mirror / f"grid_results{suffix}.json").write_text(payload)
+                try:
+                    import pandas as pd
+                    pd.DataFrame(rows).to_csv(
+                        mirror / f"grid_results{suffix}.csv", index=False)
+                except ImportError:
+                    pass
 
     try:
         import pandas as pd
