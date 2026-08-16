@@ -1,0 +1,48 @@
+# Control grid (2nd Kaggle account, runs in parallel with m3_rigid_body):
+# - D4 Lorenz: NEGATIVE control — pre-registered criterion requires the rotor
+#   advantage to be ABSENT here (chaotic, no rotational conservation law).
+# - D2 charged particle: second Spin(3) system — does any geo effect generalize?
+datasets:
+  - {system: lorenz, out: data/lorenz.npz, n_train: 1000}
+  - {system: lorentz_particle, out: data/lorentz_particle.npz, n_train: 1000}
+  - {system: lorentz_particle, out: data/lorentz_particle_anom.npz, anomalous: true}
+
+runs:
+  # D2 particle, decisive small-N cells, 2 seeds
+  - {name: lp-mamba-n100-s0, config: configs/exp/particle_baseline.yaml, anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=0]}
+  - {name: lp-rotor-n100-s0, config: configs/exp/particle_baseline.yaml, anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=0, model.variant=rotor_mamba]}
+  - {name: lp-mv-n100-s0, config: configs/exp/particle_baseline.yaml, anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=0, model.variant=mv_mamba]}
+  - {name: lp-mamba-n300-s0, config: configs/exp/particle_baseline.yaml, anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=300, seed=0]}
+  - {name: lp-rotor-n300-s0, config: configs/exp/particle_baseline.yaml, anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=300, seed=0, model.variant=rotor_mamba]}
+  - {name: lp-mv-n300-s0, config: configs/exp/particle_baseline.yaml, anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=300, seed=0, model.variant=mv_mamba]}
+  # D4 Lorenz negative control, 2 seeds
+  - {name: lz-mamba-n300-s0, config: configs/exp/lorenz_baseline.yaml,
+     overrides: [data.n_train=300, seed=0]}
+  - {name: lz-rotor-n300-s0, config: configs/exp/lorenz_baseline.yaml,
+     overrides: [data.n_train=300, seed=0, model.variant=rotor_mamba]}
+  - {name: lz-mv-n300-s0, config: configs/exp/lorenz_baseline.yaml,
+     overrides: [data.n_train=300, seed=0, model.variant=mv_mamba]}
+  - {name: lp-mamba-n100-s1, config: configs/exp/particle_baseline.yaml, anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=1]}
+  - {name: lp-rotor-n100-s1, config: configs/exp/particle_baseline.yaml, anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=1, model.variant=rotor_mamba]}
+  - {name: lp-mv-n100-s1, config: configs/exp/particle_baseline.yaml, anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=1, model.variant=mv_mamba]}
+  - {name: lp-mamba-n300-s1, config: configs/exp/particle_baseline.yaml, anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=300, seed=1]}
+  - {name: lp-rotor-n300-s1, config: configs/exp/particle_baseline.yaml, anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=300, seed=1, model.variant=rotor_mamba]}
+  - {name: lp-mv-n300-s1, config: configs/exp/particle_baseline.yaml, anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=300, seed=1, model.variant=mv_mamba]}
+  - {name: lz-mamba-n300-s1, config: configs/exp/lorenz_baseline.yaml,
+     overrides: [data.n_train=300, seed=1]}
+  - {name: lz-rotor-n300-s1, config: configs/exp/lorenz_baseline.yaml,
+     overrides: [data.n_train=300, seed=1, model.variant=rotor_mamba]}
+  - {name: lz-mv-n300-s1, config: configs/exp/lorenz_baseline.yaml,
+     overrides: [data.n_train=300, seed=1, model.variant=mv_mamba]}

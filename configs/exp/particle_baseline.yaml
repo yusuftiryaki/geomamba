@@ -1,0 +1,7 @@
+extends: [osc_baseline.yaml]
+name: lp-mamba
+data:
+  path: data/lorentz_particle.npz
+  n_train: 1000
+trainer:
+  eval_every: 1000
