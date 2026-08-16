@@ -6,8 +6,15 @@ Usage:
 """
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+
+
 import argparse
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -15,9 +22,14 @@ from pathlib import Path
 import yaml
 
 
+SRC = str(Path(__file__).resolve().parent.parent / "src")
+
+
 def sh(args: list[str]) -> None:
     print("+", " ".join(args), flush=True)
-    subprocess.run(args, check=True)
+    env = dict(os.environ)
+    env["PYTHONPATH"] = SRC + os.pathsep + env.get("PYTHONPATH", "")
+    subprocess.run(args, check=True, env=env)
 
 
 def main() -> None:
