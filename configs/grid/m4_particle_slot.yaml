@@ -1,0 +1,79 @@
+# Does slotting rescue D2, where free-embedding geo variants lost outright?
+# Velocity is grade-1 here (rigid-body omega was grade-2).
+datasets:
+  - {system: lorentz_particle, out: data/lorentz_particle.npz, n_train: 1000}
+  - {system: lorentz_particle, out: data/lorentz_particle_anom.npz, anomalous: true}
+
+runs:
+  - {name: ps-mamba-n100-s0, config: configs/exp/particle_baseline.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=0]}
+  - {name: ps-mambaslot-n100-s0, config: configs/exp/lp_mamba_slot.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=0]}
+  - {name: ps-rotor-n100-s0, config: configs/exp/particle_baseline.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=0, model.variant=rotor_mamba]}
+  - {name: ps-rotorslot-n100-s0, config: configs/exp/lp_rotor_slot.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=0]}
+  - {name: ps-mamba-n100-s1, config: configs/exp/particle_baseline.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=1]}
+  - {name: ps-mambaslot-n100-s1, config: configs/exp/lp_mamba_slot.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=1]}
+  - {name: ps-rotor-n100-s1, config: configs/exp/particle_baseline.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=1, model.variant=rotor_mamba]}
+  - {name: ps-rotorslot-n100-s1, config: configs/exp/lp_rotor_slot.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=1]}
+  - {name: ps-mamba-n100-s2, config: configs/exp/particle_baseline.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=2]}
+  - {name: ps-mambaslot-n100-s2, config: configs/exp/lp_mamba_slot.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=2]}
+  - {name: ps-rotor-n100-s2, config: configs/exp/particle_baseline.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=2, model.variant=rotor_mamba]}
+  - {name: ps-rotorslot-n100-s2, config: configs/exp/lp_rotor_slot.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=2]}
+  - {name: ps-mamba-n300-s0, config: configs/exp/particle_baseline.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=300, seed=0]}
+  - {name: ps-mambaslot-n300-s0, config: configs/exp/lp_mamba_slot.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=300, seed=0]}
+  - {name: ps-rotor-n300-s0, config: configs/exp/particle_baseline.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=300, seed=0, model.variant=rotor_mamba]}
+  - {name: ps-rotorslot-n300-s0, config: configs/exp/lp_rotor_slot.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=300, seed=0]}
+  - {name: ps-mamba-n300-s1, config: configs/exp/particle_baseline.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=300, seed=1]}
+  - {name: ps-mambaslot-n300-s1, config: configs/exp/lp_mamba_slot.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=300, seed=1]}
+  - {name: ps-rotor-n300-s1, config: configs/exp/particle_baseline.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=300, seed=1, model.variant=rotor_mamba]}
+  - {name: ps-rotorslot-n300-s1, config: configs/exp/lp_rotor_slot.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=300, seed=1]}
+  - {name: ps-mamba-n300-s2, config: configs/exp/particle_baseline.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=300, seed=2]}
+  - {name: ps-mambaslot-n300-s2, config: configs/exp/lp_mamba_slot.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=300, seed=2]}
+  - {name: ps-rotor-n300-s2, config: configs/exp/particle_baseline.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=300, seed=2, model.variant=rotor_mamba]}
+  - {name: ps-rotorslot-n300-s2, config: configs/exp/lp_rotor_slot.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=300, seed=2]}

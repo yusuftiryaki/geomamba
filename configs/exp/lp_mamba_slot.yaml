@@ -1,0 +1,8 @@
+extends: [particle_baseline.yaml]
+name: lp-mamba-slot
+model:
+  variant: mamba
+  d_model: 72
+  d_state: 16
+  geo_embed: true
+  slot_grade: 1

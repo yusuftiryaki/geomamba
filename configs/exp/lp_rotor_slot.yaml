@@ -1,0 +1,7 @@
+extends: [particle_baseline.yaml]
+name: lp-rotor-slot
+model:
+  variant: rotor_mamba
+  d_model: 64
+  geo_embed: true
+  slot_grade: 1   # velocity is a vector (grade 1), unlike rigid-body omega
