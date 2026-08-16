@@ -54,6 +54,44 @@ Fark geometrik yapıdan geliyor, trivial bir sıçrama tespitinden değil.
 Kalibrasyon penceresi (0-63. adım) anomali başlangıçlarından (≥64) temiz —
 sızıntı yok.
 
+### DÜZELTME (aynı gün, şüpheci inceleme sonrası)
+
+İlk yazımdaki "eğitimsiz, neredeyse kusursuz dedektör" çerçevesi **fazla
+iddialıydı**. Üç düzeltme:
+
+**1. "Eğitimsiz" değil, "kalibrasyonlu".** İzleyici normali her trajektorinin
+ilk %25'inden (64 adım) öğreniyor. Eğitim veri seti ve gradyan gerektirmiyor,
+ama anomalisiz bir referans pencere şart. Normali bilmeden anormali bilmiyor.
+
+**2. 0.996 rakamı sentetik verinin artefaktı.** Skor dağılımına bakınca
+görüldü: normal dönemde ~1.9, anomali sonrası ~10^6. Sebep, ground-truth'ta
+korunan büyüklüğün integratör hassasiyetinde (1e-10) korunması — normal bandı
+absürt dar, her sapma milyonlarca sigma. Gerçekçi gürültüde çöküyor:
+
+| gözlem gürültüsü | AUROC | olay-F1 | precision | recall |
+|---|---|---|---|---|
+| %0 | 0.996 | 0.806 | 0.69 | 0.96 |
+| %0.5 | 0.865 | 0.706 | 0.73 | 0.68 |
+| %1 | 0.816 | 0.592 | 0.76 | 0.53 |
+| %5 | 0.671 | 0.175 | 0.43 | 0.15 |
+
+**3. Precision'ı da vermeliydim:** gürültüsüzde bile 0.69 — alarmların ~%31'i
+yanlış. "Neredeyse kusursuz" yanlış tarifti.
+
+**Geriye kalan gerçek bulgu (daha mütevazı ama sağlam):** gürültü altında bile
+geometrik izleyici naif dedektörlerin hepsini geçiyor —
+
+| gürültü | geometrik | en iyi naif |
+|---|---|---|
+| %0 | 0.996 / F1 0.81 | 0.661 / F1 0.20 |
+| %1 | 0.816 / F1 0.59 | 0.645 / F1 0.30 |
+| %5 | 0.671 / F1 0.18 | 0.625 / F1 0.17 |
+
+Yani %1 gürültüye kadar anlamlı üstünlük var, %5'te fark kapanıyor. Doğru
+ifade: **"korunan büyüklüğü doğrudan izlemek, tahmin-artığı izlemekten iyidir
+— ölçüm gürültüsü invaryantın korunma sıkılığını aşmadığı sürece."**
+Bu bir mühendislik reçetesi; devrim değil.
+
 **İzleyicinin sınırları (dürüstlük):**
 
 | sistem | AUROC | neden |
