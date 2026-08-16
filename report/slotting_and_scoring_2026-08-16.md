@@ -100,10 +100,10 @@ Bu bir mühendislik reçetesi; devrim değil.
 | D2 parçacık (alan ters dönmesi) | 0.514 | **anomali \|v\|'yi bozmuyor** — Boris dinamiğinde alan ters dönse de hız normu korunur; izleyici doğru olarak bir şey bulmuyor |
 | D4 Lorenz (ρ değişimi) | 0.768 | korunum yok; kuadratik formlar yine de kayıyor, ama yanlış alarm yüksek (P 0.31) |
 
-Yani izleyici evrensel bir dedektör değil: **izlenen invaryantı bozan
-anomalileri** yakalıyor. Bu bir kusur değil, tanım — ve kullanım için net
-bir reçete veriyor: "hangi büyüklük korunmalı?" sorusunu cevaplayabildiğin
-her sistemde eğitimsiz, neredeyse mükemmel bir dedektör kurulabiliyor.
+Yani izleyici evrensel bir dedektör değil: **izlenen invaryantı bozan**
+anomalileri yakalıyor, başkasını değil. Reçete şu: "hangi büyüklük korunmalı?"
+sorusunu cevaplayabildiğin ve ölçüm gürültüsü o korunumun sıkılığını aşmadığı
+sistemlerde, öğrenilmiş bir tahminciye göre daha iyi bir dedektör kurulabilir.
 
 ## 3. Tezin güncellenmiş hali
 
@@ -116,9 +116,11 @@ Veriler üç ayrı iddiayı ayrıştırdı:
    çalışıyor. Kısıtın işe yaraması temsile bağımlı.
 3. **Çarpım/karışım geometrisi (Clifford-linear):** ŞU HALİYLE ZARARLI —
    ifade gücünü çok kısıyor.
-4. **Bonus, planlanmamış:** geometrik invaryant izleme, öğrenilmiş anomali
-   skorlamasından bir kategori daha iyi (0.996 vs 0.55-0.71) ve eğitim
-   gerektirmiyor.
+4. **Bonus, planlanmamış (düzeltilmiş haliyle):** korunan büyüklüğü doğrudan
+   izlemek, tahmin-artığı izlemekten iyi — ama sadece ölçüm gürültüsü düşükken
+   (%1'e kadar anlamlı üstünlük, %5'te fark kapanıyor) ve sadece invaryantı
+   bozan anomaliler için. Sentetik verideki 0.996 rakamı, korunumun makine
+   hassasiyetinde olmasının artefaktı; gerçekçi beklenti 0.8 bandı.
 
 ## 4. Sonraki adımlar
 
@@ -128,5 +130,7 @@ Veriler üç ayrı iddiayı ayrıştırdı:
 2. **D2 parçacıkta slotlama** (orada slot_grade=1, hız bir vektör) — kontrol
    grid'inin olumsuz sonucu slotlamayla dönüyor mu?
 3. fullgeo'yu onar veya düşür (gate'i grade-bazlı norm-gate yap).
-4. İnvaryant izleyiciyi ürünleştir: Entes verisinde karşılığı üç fazlı
-   sistemde korunan büyüklükler (dengeli sistemde |V_αβ|, güç formları).
+4. İnvaryant izleyici için gerçek testler: (a) gerçek ölçüm gürültüsü ve
+   sensör kaymasıyla, (b) invaryantı bozmayan anomalilerle, (c) öğrenilmiş
+   dedektörlere gerçekten adil koşulda (aynı kalibrasyon penceresi + aynı
+   yapısal bilgi verilerek). Bunlar geçilmeden Entes'e taşınmamalı.
