@@ -1,0 +1,5 @@
+extends: [rb_mamba.yaml]
+name: xf-pre-mamba
+data:
+  path: data/rigid_body.npz
+  n_train: 3000

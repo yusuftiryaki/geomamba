@@ -1,0 +1,108 @@
+# GEOMETRY TRANSFER — the sharpest test of the deep claim, and the direct
+# answer to "you just hardcoded the physics, write rules instead".
+#
+# Pretrain on D1 (free rigid body), then fine-tune on D2 (charged particle in
+# a magnetic field) with very little data. The two systems share NO equations,
+# NO parameters, and even a different observable grade — they share only the
+# underlying Spin(3) geometry. A hand-written rule cannot transfer at all.
+#   If geo transfers better than the baseline -> it learned the geometry.
+#   If it does not -> it memorised the system, and the claim is representation-
+#   specific rather than geometric.
+# Embedding/head are re-initialised (different observable type); the backbone
+# transfers. Fine-tuning uses 3000 steps and a lower LR.
+datasets:
+  - {system: rigid_body, out: data/rigid_body.npz, n_train: 3000}
+  - {system: lorentz_particle, out: data/lorentz_particle.npz, n_train: 1000}
+  - {system: lorentz_particle, out: data/lorentz_particle_anom.npz, anomalous: true}
+
+runs:
+  # --- stage 1: pretrain on D1 (unsharded, must finish first) ---
+  - {name: xf-pre-rotorslot, config: configs/exp/xfer_rotor_slot_d1.yaml, stage: 1,
+     overrides: [seed=0]}
+  - {name: xf-pre-mamba, config: configs/exp/xfer_mamba_d1.yaml, stage: 1,
+     overrides: [seed=0]}
+
+  - {name: xf-rotorslot-xfer-n25-s0, config: configs/exp/lp_rotor_slot.yaml,
+     init_from: xf-pre-rotorslot,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=25, seed=0, trainer.steps=3000, trainer.lr=1e-4, trainer.warmup_steps=100, trainer.eval_every=500]}
+  - {name: xf-rotorslot-scratch-n25-s0, config: configs/exp/lp_rotor_slot.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=25, seed=0, trainer.steps=3000, trainer.lr=1e-4, trainer.warmup_steps=100, trainer.eval_every=500]}
+  - {name: xf-mamba-xfer-n25-s0, config: configs/exp/lp_mamba76.yaml,
+     init_from: xf-pre-mamba,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=25, seed=0, trainer.steps=3000, trainer.lr=1e-4, trainer.warmup_steps=100, trainer.eval_every=500]}
+  - {name: xf-mamba-scratch-n25-s0, config: configs/exp/lp_mamba76.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=25, seed=0, trainer.steps=3000, trainer.lr=1e-4, trainer.warmup_steps=100, trainer.eval_every=500]}
+  - {name: xf-rotorslot-xfer-n25-s1, config: configs/exp/lp_rotor_slot.yaml,
+     init_from: xf-pre-rotorslot,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=25, seed=1, trainer.steps=3000, trainer.lr=1e-4, trainer.warmup_steps=100, trainer.eval_every=500]}
+  - {name: xf-rotorslot-scratch-n25-s1, config: configs/exp/lp_rotor_slot.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=25, seed=1, trainer.steps=3000, trainer.lr=1e-4, trainer.warmup_steps=100, trainer.eval_every=500]}
+  - {name: xf-mamba-xfer-n25-s1, config: configs/exp/lp_mamba76.yaml,
+     init_from: xf-pre-mamba,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=25, seed=1, trainer.steps=3000, trainer.lr=1e-4, trainer.warmup_steps=100, trainer.eval_every=500]}
+  - {name: xf-mamba-scratch-n25-s1, config: configs/exp/lp_mamba76.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=25, seed=1, trainer.steps=3000, trainer.lr=1e-4, trainer.warmup_steps=100, trainer.eval_every=500]}
+  - {name: xf-rotorslot-xfer-n25-s2, config: configs/exp/lp_rotor_slot.yaml,
+     init_from: xf-pre-rotorslot,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=25, seed=2, trainer.steps=3000, trainer.lr=1e-4, trainer.warmup_steps=100, trainer.eval_every=500]}
+  - {name: xf-rotorslot-scratch-n25-s2, config: configs/exp/lp_rotor_slot.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=25, seed=2, trainer.steps=3000, trainer.lr=1e-4, trainer.warmup_steps=100, trainer.eval_every=500]}
+  - {name: xf-mamba-xfer-n25-s2, config: configs/exp/lp_mamba76.yaml,
+     init_from: xf-pre-mamba,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=25, seed=2, trainer.steps=3000, trainer.lr=1e-4, trainer.warmup_steps=100, trainer.eval_every=500]}
+  - {name: xf-mamba-scratch-n25-s2, config: configs/exp/lp_mamba76.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=25, seed=2, trainer.steps=3000, trainer.lr=1e-4, trainer.warmup_steps=100, trainer.eval_every=500]}
+  - {name: xf-rotorslot-xfer-n100-s0, config: configs/exp/lp_rotor_slot.yaml,
+     init_from: xf-pre-rotorslot,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=0, trainer.steps=3000, trainer.lr=1e-4, trainer.warmup_steps=100, trainer.eval_every=500]}
+  - {name: xf-rotorslot-scratch-n100-s0, config: configs/exp/lp_rotor_slot.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=0, trainer.steps=3000, trainer.lr=1e-4, trainer.warmup_steps=100, trainer.eval_every=500]}
+  - {name: xf-mamba-xfer-n100-s0, config: configs/exp/lp_mamba76.yaml,
+     init_from: xf-pre-mamba,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=0, trainer.steps=3000, trainer.lr=1e-4, trainer.warmup_steps=100, trainer.eval_every=500]}
+  - {name: xf-mamba-scratch-n100-s0, config: configs/exp/lp_mamba76.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=0, trainer.steps=3000, trainer.lr=1e-4, trainer.warmup_steps=100, trainer.eval_every=500]}
+  - {name: xf-rotorslot-xfer-n100-s1, config: configs/exp/lp_rotor_slot.yaml,
+     init_from: xf-pre-rotorslot,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=1, trainer.steps=3000, trainer.lr=1e-4, trainer.warmup_steps=100, trainer.eval_every=500]}
+  - {name: xf-rotorslot-scratch-n100-s1, config: configs/exp/lp_rotor_slot.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=1, trainer.steps=3000, trainer.lr=1e-4, trainer.warmup_steps=100, trainer.eval_every=500]}
+  - {name: xf-mamba-xfer-n100-s1, config: configs/exp/lp_mamba76.yaml,
+     init_from: xf-pre-mamba,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=1, trainer.steps=3000, trainer.lr=1e-4, trainer.warmup_steps=100, trainer.eval_every=500]}
+  - {name: xf-mamba-scratch-n100-s1, config: configs/exp/lp_mamba76.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=1, trainer.steps=3000, trainer.lr=1e-4, trainer.warmup_steps=100, trainer.eval_every=500]}
+  - {name: xf-rotorslot-xfer-n100-s2, config: configs/exp/lp_rotor_slot.yaml,
+     init_from: xf-pre-rotorslot,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=2, trainer.steps=3000, trainer.lr=1e-4, trainer.warmup_steps=100, trainer.eval_every=500]}
+  - {name: xf-rotorslot-scratch-n100-s2, config: configs/exp/lp_rotor_slot.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=2, trainer.steps=3000, trainer.lr=1e-4, trainer.warmup_steps=100, trainer.eval_every=500]}
+  - {name: xf-mamba-xfer-n100-s2, config: configs/exp/lp_mamba76.yaml,
+     init_from: xf-pre-mamba,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=2, trainer.steps=3000, trainer.lr=1e-4, trainer.warmup_steps=100, trainer.eval_every=500]}
+  - {name: xf-mamba-scratch-n100-s2, config: configs/exp/lp_mamba76.yaml,
+     anom: data/lorentz_particle_anom.npz,
+     overrides: [data.n_train=100, seed=2, trainer.steps=3000, trainer.lr=1e-4, trainer.warmup_steps=100, trainer.eval_every=500]}

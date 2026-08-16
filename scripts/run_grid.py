@@ -38,6 +38,8 @@ def main() -> None:
     ap.add_argument("--data-only", action="store_true",
                     help="generate datasets and exit (run once before sharding)")
     ap.add_argument("--skip-data", action="store_true")
+    ap.add_argument("--only-stage", type=int, default=None,
+                    help="run only runs whose 'stage' equals this (pretrain=1)")
     ap.add_argument("--shard", default=None,
                     help="'k/n': run only every n-th run starting at k, for "
                          "one-process-per-GPU parallelism")
@@ -67,10 +69,20 @@ def main() -> None:
         return
 
     suffix = f"-shard{shard_k}" if shard_n > 1 else ""
+    if args.only_stage is not None:
+        suffix += f"-stage{args.only_stage}"
+    selected = [r for r in grid["runs"]
+                if args.only_stage is None or r.get("stage", 2) == args.only_stage]
     rows = []
-    for run in grid["runs"][shard_k::shard_n]:
+    for run in selected[shard_k::shard_n]:
         overrides = [str(o) for o in run.get("overrides", [])]
         name = run.get("name") or Path(run["config"]).stem
+        if run.get("init_from"):
+            srcs = sorted(Path("experiments/runs").glob(f"{run['init_from']}-*"))
+            if not srcs:
+                print(f"!! skipping {name}: no run dir for {run['init_from']}")
+                continue
+            overrides.append(f"init_from={srcs[-1]}")
         sh([sys.executable, "scripts/train.py", "--config", run["config"],
             f"name={name}", *overrides])
         run_dir = sorted(Path("experiments/runs").glob(f"{name}-*"))[-1]

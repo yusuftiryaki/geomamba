@@ -1,0 +1,5 @@
+extends: [rb_rotor_slot.yaml]
+name: xf-pre-rotorslot
+data:
+  path: data/rigid_body.npz
+  n_train: 3000
