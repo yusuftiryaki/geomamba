@@ -1,0 +1,35 @@
+# Re-run of the decisive N=300 cell with anomaly scoring v2
+# (CUSUM, model-free invariant/level-set monitor, event-level F1, and the
+# expensive freeze-the-regime rollout scorer). Run with Save & Run All!
+datasets:
+  - {system: rigid_body, out: data/rigid_body.npz, n_train: 3000}
+  - {system: rigid_body, out: data/rigid_body_anom.npz, anomalous: true}
+
+runs:
+  - {name: v2-rb-mamba-n300-s0, config: configs/exp/rb_mamba.yaml,
+     anom: data/rigid_body_anom.npz, eval_args: [--anomaly-rollout],
+     overrides: [data.n_train=300, seed=0]}
+  - {name: v2-rb-rotor-n300-s0, config: configs/exp/rb_rotor.yaml,
+     anom: data/rigid_body_anom.npz, eval_args: [--anomaly-rollout],
+     overrides: [data.n_train=300, seed=0]}
+  - {name: v2-rb-mv-n300-s0, config: configs/exp/rb_mv.yaml,
+     anom: data/rigid_body_anom.npz, eval_args: [--anomaly-rollout],
+     overrides: [data.n_train=300, seed=0]}
+  - {name: v2-rb-mamba-n300-s1, config: configs/exp/rb_mamba.yaml,
+     anom: data/rigid_body_anom.npz, eval_args: [--anomaly-rollout],
+     overrides: [data.n_train=300, seed=1]}
+  - {name: v2-rb-rotor-n300-s1, config: configs/exp/rb_rotor.yaml,
+     anom: data/rigid_body_anom.npz, eval_args: [--anomaly-rollout],
+     overrides: [data.n_train=300, seed=1]}
+  - {name: v2-rb-mv-n300-s1, config: configs/exp/rb_mv.yaml,
+     anom: data/rigid_body_anom.npz, eval_args: [--anomaly-rollout],
+     overrides: [data.n_train=300, seed=1]}
+  - {name: v2-rb-mamba-n300-s2, config: configs/exp/rb_mamba.yaml,
+     anom: data/rigid_body_anom.npz, eval_args: [--anomaly-rollout],
+     overrides: [data.n_train=300, seed=2]}
+  - {name: v2-rb-rotor-n300-s2, config: configs/exp/rb_rotor.yaml,
+     anom: data/rigid_body_anom.npz, eval_args: [--anomaly-rollout],
+     overrides: [data.n_train=300, seed=2]}
+  - {name: v2-rb-mv-n300-s2, config: configs/exp/rb_mv.yaml,
+     anom: data/rigid_body_anom.npz, eval_args: [--anomaly-rollout],
+     overrides: [data.n_train=300, seed=2]}

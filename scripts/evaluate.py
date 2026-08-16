@@ -34,6 +34,8 @@ def main() -> None:
     ap.add_argument("--horizons", type=int, nargs="+", default=[1, 10, 50, 100])
     ap.add_argument("--rollout-context", type=int, default=64)
     ap.add_argument("--anom", type=Path, default=None)
+    ap.add_argument("--anomaly-rollout", action="store_true",
+                    help="expensive freeze-the-regime rollout scoring")
     args = ap.parse_args()
 
     cfg = yaml.safe_load((args.run / "config.yaml").read_text())
@@ -89,6 +91,23 @@ def main() -> None:
         ts = A.two_sided_scores(scores)
         result["anomaly_auroc_2s"] = A.auroc(ts, labels)
         result["detection_delay_2s"] = A.detection_delay(ts, labels)
+
+        # v2 scorers
+        cs = A.cusum_scores(scores)
+        result["anomaly_auroc_cusum"] = A.auroc(cs, labels)
+        result["detection_delay_cusum"] = A.detection_delay(cs, labels)
+        result.update({f"{k}_cusum": v for k, v in A.event_f1(cs, labels).items()})
+
+        inv = A.invariant_scores(araw["x"])  # model-free level-set monitor
+        result["anomaly_auroc_inv"] = A.auroc(inv, labels)
+        result.update({f"{k}_inv": v for k, v in A.event_f1(inv, labels).items()})
+
+        if args.anomaly_rollout:
+            rs = A.rollout_scores(model, x[:200])
+            lab = labels[:200]
+            mask = ~np.isnan(rs)
+            result["anomaly_auroc_roll"] = A.auroc(rs[mask], lab[mask])
+            result.update({f"{k}_roll": v for k, v in A.event_f1(rs, lab).items()})
 
     (args.run / "eval.json").write_text(json.dumps(result, indent=2))
     print(json.dumps(result, indent=2))

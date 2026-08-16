@@ -64,6 +64,7 @@ def main() -> None:
         eval_cmd = [sys.executable, "scripts/evaluate.py", "--run", str(run_dir)]
         if run.get("anom"):
             eval_cmd += ["--anom", run["anom"]]
+        eval_cmd += [str(a) for a in run.get("eval_args", [])]
         sh(eval_cmd)
         row = json.loads((run_dir / "eval.json").read_text())
         row["name"] = name
