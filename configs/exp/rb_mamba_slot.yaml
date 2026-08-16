@@ -1,0 +1,7 @@
+extends: [rb_mamba.yaml]
+name: rb-mamba-slot
+model:
+  variant: mamba
+  d_model: 72       # slotting needs d_model divisible by 8
+  geo_embed: true   # slotting WITHOUT the rotor constraint (factorial ablation)
+  slot_grade: 2

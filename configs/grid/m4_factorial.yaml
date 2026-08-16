@@ -1,0 +1,80 @@
+# Factorial ablation: does slotting help on its own, or only with the rotor?
+#   {mamba, rotor} x {free embedding, slotted} x N in {100, 300} x 3 seeds
+# Run with Save & Run All, T4 x2.
+datasets:
+  - {system: rigid_body, out: data/rigid_body.npz, n_train: 3000}
+  - {system: rigid_body, out: data/rigid_body_anom.npz, anomalous: true}
+
+runs:
+  - {name: fx-mamba-n100-s0, config: configs/exp/rb_mamba.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=100, seed=0]}
+  - {name: fx-mambaslot-n100-s0, config: configs/exp/rb_mamba_slot.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=100, seed=0]}
+  - {name: fx-rotor-n100-s0, config: configs/exp/rb_rotor.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=100, seed=0]}
+  - {name: fx-slot-n100-s0, config: configs/exp/rb_rotor_slot.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=100, seed=0]}
+  - {name: fx-mamba-n100-s1, config: configs/exp/rb_mamba.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=100, seed=1]}
+  - {name: fx-mambaslot-n100-s1, config: configs/exp/rb_mamba_slot.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=100, seed=1]}
+  - {name: fx-rotor-n100-s1, config: configs/exp/rb_rotor.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=100, seed=1]}
+  - {name: fx-slot-n100-s1, config: configs/exp/rb_rotor_slot.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=100, seed=1]}
+  - {name: fx-mamba-n100-s2, config: configs/exp/rb_mamba.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=100, seed=2]}
+  - {name: fx-mambaslot-n100-s2, config: configs/exp/rb_mamba_slot.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=100, seed=2]}
+  - {name: fx-rotor-n100-s2, config: configs/exp/rb_rotor.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=100, seed=2]}
+  - {name: fx-slot-n100-s2, config: configs/exp/rb_rotor_slot.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=100, seed=2]}
+  - {name: fx-mamba-n300-s0, config: configs/exp/rb_mamba.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=0]}
+  - {name: fx-mambaslot-n300-s0, config: configs/exp/rb_mamba_slot.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=0]}
+  - {name: fx-rotor-n300-s0, config: configs/exp/rb_rotor.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=0]}
+  - {name: fx-slot-n300-s0, config: configs/exp/rb_rotor_slot.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=0]}
+  - {name: fx-mamba-n300-s1, config: configs/exp/rb_mamba.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=1]}
+  - {name: fx-mambaslot-n300-s1, config: configs/exp/rb_mamba_slot.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=1]}
+  - {name: fx-rotor-n300-s1, config: configs/exp/rb_rotor.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=1]}
+  - {name: fx-slot-n300-s1, config: configs/exp/rb_rotor_slot.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=1]}
+  - {name: fx-mamba-n300-s2, config: configs/exp/rb_mamba.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=2]}
+  - {name: fx-mambaslot-n300-s2, config: configs/exp/rb_mamba_slot.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=2]}
+  - {name: fx-rotor-n300-s2, config: configs/exp/rb_rotor.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=2]}
+  - {name: fx-slot-n300-s2, config: configs/exp/rb_rotor_slot.yaml,
+     anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=2]}
