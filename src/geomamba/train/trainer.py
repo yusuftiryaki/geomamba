@@ -30,6 +30,7 @@ class TrainConfig:
     eval_rollout_batches: int = 2
     eval_tf_batches: int = 16
     max_wall_seconds: int = 2 * 3600
+    device: str = "auto"  # auto -> cuda if available, else cpu
 
 
 class Trainer:
@@ -47,6 +48,10 @@ class Trainer:
     def fit(self, model: GeoMamba, train_ds, val_ds) -> dict:
         c = self.cfg
         torch.set_num_threads(c.num_threads)
+        device = c.device
+        if device == "auto":
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+        model.to(device)
         opt = torch.optim.AdamW(
             model.parameters(), lr=c.lr, weight_decay=c.weight_decay
         )
@@ -63,7 +68,7 @@ class Trainer:
                 candidate = torch.compile(model)
                 # trigger fwd+bwd compilation now: backend failures surface
                 # lazily, and a 6h queued run must fall back, not crash
-                warm = next(iter(train_loader))
+                warm = {k: v.to(device) for k, v in next(iter(train_loader)).items()}
                 torch.nn.functional.mse_loss(
                     candidate(warm["input"])["forecast"], warm["target"]
                 ).backward()
@@ -85,6 +90,7 @@ class Trainer:
 
             for group in opt.param_groups:
                 group["lr"] = self._lr_at(step)
+            batch = {k: v.to(device) for k, v in batch.items()}
             pred = train_model(batch["input"])["forecast"]
             loss = torch.nn.functional.mse_loss(pred, batch["target"])
             opt.zero_grad()

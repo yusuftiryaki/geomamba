@@ -7,12 +7,18 @@ import torch
 from geomamba.models.model import GeoMamba
 
 
+def _model_device(model: GeoMamba) -> torch.device:
+    return next(model.parameters()).device
+
+
 @torch.no_grad()
 def teacher_forced_mse(model: GeoMamba, loader, max_batches: int | None = None) -> float:
+    device = _model_device(model)
     total, count = 0.0, 0
     for bi, batch in enumerate(loader):
         if max_batches is not None and bi >= max_batches:
             break
+        batch = {k: v.to(device) for k, v in batch.items()}
         pred = model(batch["input"])["forecast"]
         total += torch.nn.functional.mse_loss(
             pred, batch["target"], reduction="sum"
@@ -42,11 +48,12 @@ def rollout_mse(
     h_max = max(horizons)
     sums = {h: 0.0 for h in horizons}
     counts = {h: 0 for h in horizons}
+    device = _model_device(model)
     for bi, batch in enumerate(loader):
         if bi >= max_batches:
             break
         # reconstruct absolute trajectory from input (input is x_t sequence)
-        traj = batch["input"]
+        traj = batch["input"].to(device)
         if traj.shape[1] < context_len + h_max:
             raise ValueError("trajectory too short for requested rollout")
         context = traj[:, :context_len]

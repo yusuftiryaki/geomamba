@@ -1,0 +1,57 @@
+# M3/M4-lite grid: 3 variants x N x 3 seeds on D1 rigid body.
+# On a Kaggle T4 this is a few GPU-hours; on the ARM VM it would take weeks.
+datasets:
+  - {system: rigid_body, out: data/rigid_body.npz, n_train: 3000}
+  - {system: rigid_body, out: data/rigid_body_anom.npz, anomalous: true}
+
+runs:
+  # N=100 and N=300 are the decisive small-data cells; run them first
+  - {name: rb-mamba-n100-s0, config: configs/exp/rb_mamba.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=100, seed=0]}
+  - {name: rb-rotor-n100-s0, config: configs/exp/rb_rotor.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=100, seed=0]}
+  - {name: rb-mv-n100-s0, config: configs/exp/rb_mv.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=100, seed=0]}
+  - {name: rb-mamba-n300-s0, config: configs/exp/rb_mamba.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=0]}
+  - {name: rb-rotor-n300-s0, config: configs/exp/rb_rotor.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=0]}
+  - {name: rb-mv-n300-s0, config: configs/exp/rb_mv.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=0]}
+  - {name: rb-mamba-n1000-s0, config: configs/exp/rb_mamba.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=1000, seed=0]}
+  - {name: rb-rotor-n1000-s0, config: configs/exp/rb_rotor.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=1000, seed=0]}
+  - {name: rb-mv-n1000-s0, config: configs/exp/rb_mv.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=1000, seed=0]}
+  - {name: rb-mamba-n3000-s0, config: configs/exp/rb_mamba.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=3000, seed=0]}
+  - {name: rb-rotor-n3000-s0, config: configs/exp/rb_rotor.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=3000, seed=0]}
+  - {name: rb-mv-n3000-s0, config: configs/exp/rb_mv.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=3000, seed=0]}
+  # seeds 1-2 for the decisive cells
+  - {name: rb-mamba-n100-s1, config: configs/exp/rb_mamba.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=100, seed=1]}
+  - {name: rb-rotor-n100-s1, config: configs/exp/rb_rotor.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=100, seed=1]}
+  - {name: rb-mv-n100-s1, config: configs/exp/rb_mv.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=100, seed=1]}
+  - {name: rb-mamba-n300-s1, config: configs/exp/rb_mamba.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=1]}
+  - {name: rb-rotor-n300-s1, config: configs/exp/rb_rotor.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=1]}
+  - {name: rb-mv-n300-s1, config: configs/exp/rb_mv.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=1]}
+  - {name: rb-mamba-n100-s2, config: configs/exp/rb_mamba.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=100, seed=2]}
+  - {name: rb-rotor-n100-s2, config: configs/exp/rb_rotor.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=100, seed=2]}
+  - {name: rb-mv-n100-s2, config: configs/exp/rb_mv.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=100, seed=2]}
+  - {name: rb-mamba-n300-s2, config: configs/exp/rb_mamba.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=2]}
+  - {name: rb-rotor-n300-s2, config: configs/exp/rb_rotor.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=2]}
+  - {name: rb-mv-n300-s2, config: configs/exp/rb_mv.yaml, anom: data/rigid_body_anom.npz,
+     overrides: [data.n_train=300, seed=2]}

@@ -38,6 +38,8 @@ def main() -> None:
     ckpt = torch.load(ckpt_path, map_location="cpu", weights_only=True)
     model.load_state_dict(ckpt["model"])
     model.eval()
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model.to(device)
     torch.set_num_threads(cfg.get("trainer", {}).get("num_threads", 3))
 
     data_path = Path(cfg["data"]["path"])
@@ -63,7 +65,7 @@ def main() -> None:
         )
         ctx = args.rollout_context
         horizon = traj.shape[1] - 1 - ctx
-        preds = model.rollout(traj[:, :ctx], horizon).numpy() * std + mean
+        preds = model.rollout(traj[:, :ctx].to(device), horizon).cpu().numpy() * std + mean
         if "rigid_body" in data_path.stem:
             result.update(
                 physics.rigid_body_drifts(preds, raw["test_params"][:n_eval])

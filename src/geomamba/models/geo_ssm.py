@@ -141,6 +141,6 @@ class GeoS6(nn.Module):
             h = pscan.scan_block(A, inputs, self.scan_mode)  # [B, L, C, d]
 
         grade_w = grades.reshape(b, l, C, self.n_grades)
-        readout = grade_w @ self.al.grade_masks.to(x.dtype)  # [B, L, C, d]
+        readout = grade_w @ self.al.grade_masks.to(dtype=x.dtype, device=x.device)
         y = (h * readout).reshape(b, l, self.d_inner)
         return y + self.D * x

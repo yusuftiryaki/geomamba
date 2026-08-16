@@ -28,6 +28,7 @@ def main() -> None:
         cfg["data"]["path"],
         n_train=cfg["data"].get("n_train"),
         seed=cfg.get("seed", 0),
+        max_len=cfg["data"].get("max_len"),
     )
     n_features = splits["train"][0]["input"].shape[-1]
 

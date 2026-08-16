@@ -14,9 +14,10 @@ from geomamba.models.model import GeoMamba
 @torch.no_grad()
 def residual_scores(model: GeoMamba, x: torch.Tensor, batch: int = 16) -> np.ndarray:
     """x: [N, L, F] normalized trajectories -> scores [N, L-1]."""
+    device = next(model.parameters()).device
     scores = []
     for s in range(0, x.shape[0], batch):
-        xb = x[s : s + batch]
+        xb = x[s : s + batch].to(device)
         pred = model(xb[:, :-1])["forecast"]
         resid = pred - (xb[:, 1:] - xb[:, :-1])
         scores.append((resid**2).mean(-1).cpu().numpy())
