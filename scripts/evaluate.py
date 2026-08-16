@@ -64,7 +64,7 @@ def main() -> None:
     )
 
     # physics drift on a long rollout, if the dataset carries invariant params
-    if "test_params" in raw or "lorentz" in data_path.stem:
+    if "test_params" in raw:
         n_eval = min(64, len(raw["test"]))
         traj = torch.from_numpy(
             ((raw["test"][:n_eval] - mean) / std).astype(np.float32)
