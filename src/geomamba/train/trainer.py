@@ -53,7 +53,9 @@ class Trainer:
             device = "cuda" if torch.cuda.is_available() else "cpu"
         model.to(device)
         opt = torch.optim.AdamW(
-            model.parameters(), lr=c.lr, weight_decay=c.weight_decay
+            [p for p in model.parameters() if p.requires_grad],
+            lr=c.lr,
+            weight_decay=c.weight_decay,
         )
         train_loader = DataLoader(
             train_ds, batch_size=c.batch_size, shuffle=True, drop_last=True

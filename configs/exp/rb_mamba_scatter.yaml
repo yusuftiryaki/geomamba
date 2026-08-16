@@ -1,0 +1,7 @@
+extends: [rb_mamba_slot.yaml]
+name: rb-mamba-scatter
+model:
+  # scalar + one vector blade + pseudoscalar: identical sparsity and parameter
+  # count to slotting, but these three do not rotate together, so the triple is
+  # not a geometric object. If this matches slotting, the win is not geometric.
+  slot_blades: [0, 1, 7]

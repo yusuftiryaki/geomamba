@@ -1,0 +1,4 @@
+extends: [rb_rotor_slot.yaml]
+name: rb-rotor-scatter
+model:
+  slot_blades: [0, 1, 7]   # see rb_mamba_scatter.yaml

@@ -36,6 +36,10 @@ def main() -> None:
     ap.add_argument("--anom", type=Path, default=None)
     ap.add_argument("--anomaly-rollout", action="store_true",
                     help="expensive freeze-the-regime rollout scoring")
+    ap.add_argument("--rot-test", action="store_true",
+                    help="also score a globally rotated test set (equivariance "
+                         "probe; only meaningful where the training frame is "
+                         "canonical, i.e. rigid_body)")
     args = ap.parse_args()
 
     cfg = yaml.safe_load((args.run / "config.yaml").read_text())
@@ -80,6 +84,38 @@ def main() -> None:
             )
         elif "particle" in data_path.stem:
             result.update(physics.particle_drifts(preds))
+
+    if args.rot_test:
+        # Equivariance probe. Euler's equations are exactly SO(3)-covariant: if
+        # w(t) solves them for inertia I, then R w(t) solves them for R I R^T.
+        # So rotating the test trajectories yields *valid physics* in a frame
+        # the model never saw (training inertia is always diagonal and sorted).
+        # A fully equivariant pipeline would score identically; the ratio says
+        # how much geometry the model actually uses.
+        # Caveat: normalisation is per-component and the data is anisotropic,
+        # so even a perfect model cannot reach 1.0 -- persistence_rot_gap is
+        # that floor, and only differences between arms should be read.
+        from scipy.spatial.transform import Rotation
+
+        rot = Rotation.random(len(raw["test"]), random_state=1234).as_matrix()
+        x_rot = np.einsum("nij,ntj->nti", rot, raw["test"].astype(np.float64))
+        rot_loader = DataLoader(
+            TrajectoryDataset(x_rot.astype(np.float32), mean, std), batch_size=16
+        )
+        result["test_mse_rot"] = M.teacher_forced_mse(model, rot_loader)
+        result["persistence_mse_rot"] = M.persistence_mse(rot_loader)
+        result.update({
+            f"{k}_rot": v
+            for k, v in M.rollout_mse(model, rot_loader, args.rollout_context,
+                                      tuple(args.horizons), max_batches=8).items()
+        })
+        result["rot_gap"] = result["test_mse_rot"] / result["test_mse"]
+        result["rot_gap_h100"] = (
+            result["rollout_mse_h100_rot"] / result["rollout_mse_h100"]
+        )
+        result["persistence_rot_gap"] = (
+            result["persistence_mse_rot"] / result["persistence_mse"]
+        )
 
     if args.anom is not None:
         araw = np.load(args.anom)

@@ -45,24 +45,49 @@ class CliffordLinear(nn.Module):
         return torch.einsum("...ib,boi->...ob", x, w)
 
 
+def resolve_blades(al: Algebra, grade: int, blades: list[int] | None) -> list[int]:
+    """Which blade slots an input object occupies.
+
+    `blades` overrides `grade` and may name slots of mixed grade — that is the
+    `scatter` control: same sparsity and parameter count as grade slotting, but
+    the chosen slots do not rotate together, so the triple is no longer a
+    geometric object. If the two agree, geometry is not what slotting buys.
+    """
+    if blades is None:
+        return list(al.blade_indices_of_grade[grade])
+    if not all(0 <= b < al.dim for b in blades):
+        raise ValueError(f"blade indices out of range for dim {al.dim}: {blades}")
+    if len(set(blades)) != len(blades):
+        raise ValueError(f"duplicate blade indices: {blades}")
+    return list(blades)
+
+
 class GeoEmbed(nn.Module):
     """Slot input features into blade positions of `grade`, plus a scalar slot.
 
     features [.., F] -> multivector channels [.., c_out, dim].
-    The first `len(grade blades)` features are treated as one geometric object
-    of that grade (direction preserved); any remaining features go to grade 0.
+    The first `len(blades)` features are treated as one geometric object of
+    that grade (direction preserved); any remaining features go to grade 0.
+    Pass `blades` to place them somewhere other than a whole grade.
     """
 
-    def __init__(self, al: Algebra, n_features: int, c_out: int, grade: int = 2):
+    def __init__(
+        self,
+        al: Algebra,
+        n_features: int,
+        c_out: int,
+        grade: int = 2,
+        blades: list[int] | None = None,
+    ):
         super().__init__()
-        if len(al.blade_indices_of_grade[grade]) > n_features:
+        self.blades = resolve_blades(al, grade, blades)
+        if len(self.blades) > n_features:
             raise ValueError(
-                f"need >= {len(al.blade_indices_of_grade[grade])} features "
-                f"to slot a grade-{grade} object"
+                f"need >= {len(self.blades)} features to slot into {self.blades}"
             )
         self.al = al
         self.grade = grade
-        self.n_geo = len(al.blade_indices_of_grade[grade])
+        self.n_geo = len(self.blades)
         self.n_scalar = n_features - self.n_geo
         self.mix = CliffordLinear(al, 1, c_out)
         self.scalar_proj = (
@@ -71,7 +96,7 @@ class GeoEmbed(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         mv = x.new_zeros(*x.shape[:-1], 1, self.al.dim)
-        mv[..., 0, self.al.blade_indices_of_grade[self.grade]] = x[..., : self.n_geo]
+        mv[..., 0, self.blades] = x[..., : self.n_geo]
         out = self.mix(mv)
         if self.scalar_proj is not None:
             out = out.clone()
@@ -84,11 +109,19 @@ class GeoHead(nn.Module):
     [.., F]. Grade coefficients come from a Clifford-linear pooling to one
     channel; extra scalar features (if any) come from the scalar slot."""
 
-    def __init__(self, al: Algebra, c_in: int, n_features: int, grade: int = 2):
+    def __init__(
+        self,
+        al: Algebra,
+        c_in: int,
+        n_features: int,
+        grade: int = 2,
+        blades: list[int] | None = None,
+    ):
         super().__init__()
         self.al = al
         self.grade = grade
-        self.n_geo = len(al.blade_indices_of_grade[grade])
+        self.blades = resolve_blades(al, grade, blades)
+        self.n_geo = len(self.blades)
         self.n_scalar = n_features - self.n_geo
         self.pool = CliffordLinear(al, c_in, 1)
         self.scalar_out = (
@@ -97,7 +130,7 @@ class GeoHead(nn.Module):
 
     def forward(self, h: torch.Tensor) -> torch.Tensor:
         pooled = self.pool(h)[..., 0, :]  # [.., dim]
-        out = pooled[..., self.al.blade_indices_of_grade[self.grade]]
+        out = pooled[..., self.blades]
         if self.scalar_out is not None:
             out = torch.cat([out, self.scalar_out(pooled[..., :1])], dim=-1)
         return out

@@ -1,0 +1,4 @@
+extends: [rb_rotor.yaml]
+name: rb-rotor-frozen
+model:
+  freeze_interface: true   # free Linear embed+head, never trained

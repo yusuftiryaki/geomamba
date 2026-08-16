@@ -34,6 +34,9 @@ class ModelConfig:
     geo_embed: bool = False
     geo_proj: bool = False
     slot_grade: int = 2  # rigid-body omega and B fields are bivectors
+    # controls for "is the slotting win geometric?" (report/preregistration_slot_controls.md)
+    slot_blades: list[int] | None = None  # explicit slots; overrides slot_grade
+    freeze_interface: bool = False  # freeze embedding + forecast head at init
     heads: list[str] = field(default_factory=lambda: ["forecast"])
 
 
@@ -66,7 +69,9 @@ class Backbone(nn.Module):
             if cfg.d_model % al.dim:
                 raise ValueError("geo_embed needs d_model divisible by 8")
             self.mv_dim, n_ch = al.dim, cfg.d_model // al.dim
-            self.embed = GeoEmbed(al, cfg.n_features, n_ch, grade=cfg.slot_grade)
+            self.embed = GeoEmbed(
+                al, cfg.n_features, n_ch, grade=cfg.slot_grade, blades=cfg.slot_blades
+            )
             make_norm = lambda: GradeRMSNorm(al, n_ch)  # noqa: E731
         else:
             self.embed = nn.Linear(cfg.n_features, cfg.d_model)
@@ -94,10 +99,11 @@ class Backbone(nn.Module):
 class _GeoHeadFlat(nn.Module):
     """GeoHead on a flat [B, L, d_model] hidden state."""
 
-    def __init__(self, al: Algebra, c_in: int, n_features: int, grade: int):
+    def __init__(self, al: Algebra, c_in: int, n_features: int, grade: int,
+                 blades: list[int] | None = None):
         super().__init__()
         self.mv_dim = al.dim
-        self.head = GeoHead(al, c_in, n_features, grade=grade)
+        self.head = GeoHead(al, c_in, n_features, grade=grade, blades=blades)
 
     def forward(self, h: torch.Tensor) -> torch.Tensor:
         b, l, d = h.shape
@@ -114,12 +120,22 @@ class GeoMamba(nn.Module):
             if cfg.geo_embed:
                 al = Algebra.get(3, 0)
                 self.heads["forecast"] = _GeoHeadFlat(
-                    al, cfg.d_model // al.dim, cfg.n_features, cfg.slot_grade
+                    al, cfg.d_model // al.dim, cfg.n_features, cfg.slot_grade,
+                    blades=cfg.slot_blades,
                 )
             else:
                 self.heads["forecast"] = nn.Linear(cfg.d_model, cfg.n_features)
         if "anomaly" in cfg.heads:
             self.heads["anomaly"] = nn.Linear(cfg.d_model, 1)
+        if cfg.freeze_interface:
+            # `frozen` control: the input/output interface stays at its random
+            # init, so nothing about the representation is learned. Isolates
+            # "fewer things to learn" from "the right geometric type".
+            for p in self.backbone.embed.parameters():
+                p.requires_grad_(False)
+            if "forecast" in self.heads:
+                for p in self.heads["forecast"].parameters():
+                    p.requires_grad_(False)
 
     def forward(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
         h = self.backbone(x)

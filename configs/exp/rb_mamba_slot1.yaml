@@ -1,0 +1,4 @@
+extends: [rb_mamba_slot.yaml]
+name: rb-mamba-slot1
+model:
+  slot_grade: 1   # dual grade: same SO(3) rep as grade 2, so this must NOT matter

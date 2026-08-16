@@ -1,0 +1,166 @@
+# SLOT CONTROLS — is the slotting win geometric, or just fewer free knobs?
+# Pre-registered design and decision rules: report/preregistration_slot_controls.md
+#   free    : plain Linear embedding (baseline)
+#   slot2   : omega -> grade-2 blades (the current winner)
+#   slot1   : omega -> grade-1 blades (dual grade; theory says this must NOT matter)
+#   scatter : scalar + one vector blade + pseudoscalar (same sparsity and
+#             parameter count as slotting, but the slots do not rotate together)
+#   frozen  : free Linear embed+head, never trained (isolates "nothing to learn")
+# D1 rigid body, N=300, 5 seeds. Every run also scores a globally rotated test
+# set (--rot-test): an equivariance probe that costs no extra training.
+# Run with Save & Run All, T4 x2.
+datasets:
+  - {system: rigid_body, out: data/rigid_body.npz, n_train: 3000}
+  - {system: rigid_body, out: data/rigid_body_anom.npz, anomalous: true}
+
+runs:
+  - {name: sc-mamba-free-s0, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=0]}
+  - {name: sc-rotor-free-s0, config: configs/exp/rb_rotor.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=0]}
+  - {name: sc-mamba-slot2-s0, config: configs/exp/rb_mamba_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=0]}
+  - {name: sc-rotor-slot2-s0, config: configs/exp/rb_rotor_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=0]}
+  - {name: sc-mamba-slot1-s0, config: configs/exp/rb_mamba_slot1.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=0]}
+  - {name: sc-rotor-slot1-s0, config: configs/exp/rb_rotor_slot1.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=0]}
+  - {name: sc-mamba-scatter-s0, config: configs/exp/rb_mamba_scatter.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=0]}
+  - {name: sc-rotor-scatter-s0, config: configs/exp/rb_rotor_scatter.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=0]}
+  - {name: sc-mamba-frozen-s0, config: configs/exp/rb_mamba_frozen.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=0]}
+  - {name: sc-rotor-frozen-s0, config: configs/exp/rb_rotor_frozen.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=0]}
+  - {name: sc-mamba-free-s1, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=1]}
+  - {name: sc-rotor-free-s1, config: configs/exp/rb_rotor.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=1]}
+  - {name: sc-mamba-slot2-s1, config: configs/exp/rb_mamba_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=1]}
+  - {name: sc-rotor-slot2-s1, config: configs/exp/rb_rotor_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=1]}
+  - {name: sc-mamba-slot1-s1, config: configs/exp/rb_mamba_slot1.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=1]}
+  - {name: sc-rotor-slot1-s1, config: configs/exp/rb_rotor_slot1.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=1]}
+  - {name: sc-mamba-scatter-s1, config: configs/exp/rb_mamba_scatter.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=1]}
+  - {name: sc-rotor-scatter-s1, config: configs/exp/rb_rotor_scatter.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=1]}
+  - {name: sc-mamba-frozen-s1, config: configs/exp/rb_mamba_frozen.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=1]}
+  - {name: sc-rotor-frozen-s1, config: configs/exp/rb_rotor_frozen.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=1]}
+  - {name: sc-mamba-free-s2, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=2]}
+  - {name: sc-rotor-free-s2, config: configs/exp/rb_rotor.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=2]}
+  - {name: sc-mamba-slot2-s2, config: configs/exp/rb_mamba_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=2]}
+  - {name: sc-rotor-slot2-s2, config: configs/exp/rb_rotor_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=2]}
+  - {name: sc-mamba-slot1-s2, config: configs/exp/rb_mamba_slot1.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=2]}
+  - {name: sc-rotor-slot1-s2, config: configs/exp/rb_rotor_slot1.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=2]}
+  - {name: sc-mamba-scatter-s2, config: configs/exp/rb_mamba_scatter.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=2]}
+  - {name: sc-rotor-scatter-s2, config: configs/exp/rb_rotor_scatter.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=2]}
+  - {name: sc-mamba-frozen-s2, config: configs/exp/rb_mamba_frozen.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=2]}
+  - {name: sc-rotor-frozen-s2, config: configs/exp/rb_rotor_frozen.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=2]}
+  - {name: sc-mamba-free-s3, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=3]}
+  - {name: sc-rotor-free-s3, config: configs/exp/rb_rotor.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=3]}
+  - {name: sc-mamba-slot2-s3, config: configs/exp/rb_mamba_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=3]}
+  - {name: sc-rotor-slot2-s3, config: configs/exp/rb_rotor_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=3]}
+  - {name: sc-mamba-slot1-s3, config: configs/exp/rb_mamba_slot1.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=3]}
+  - {name: sc-rotor-slot1-s3, config: configs/exp/rb_rotor_slot1.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=3]}
+  - {name: sc-mamba-scatter-s3, config: configs/exp/rb_mamba_scatter.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=3]}
+  - {name: sc-rotor-scatter-s3, config: configs/exp/rb_rotor_scatter.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=3]}
+  - {name: sc-mamba-frozen-s3, config: configs/exp/rb_mamba_frozen.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=3]}
+  - {name: sc-rotor-frozen-s3, config: configs/exp/rb_rotor_frozen.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=3]}
+  - {name: sc-mamba-free-s4, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=4]}
+  - {name: sc-rotor-free-s4, config: configs/exp/rb_rotor.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=4]}
+  - {name: sc-mamba-slot2-s4, config: configs/exp/rb_mamba_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=4]}
+  - {name: sc-rotor-slot2-s4, config: configs/exp/rb_rotor_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=4]}
+  - {name: sc-mamba-slot1-s4, config: configs/exp/rb_mamba_slot1.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=4]}
+  - {name: sc-rotor-slot1-s4, config: configs/exp/rb_rotor_slot1.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=4]}
+  - {name: sc-mamba-scatter-s4, config: configs/exp/rb_mamba_scatter.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=4]}
+  - {name: sc-rotor-scatter-s4, config: configs/exp/rb_rotor_scatter.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=4]}
+  - {name: sc-mamba-frozen-s4, config: configs/exp/rb_mamba_frozen.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=4]}
+  - {name: sc-rotor-frozen-s4, config: configs/exp/rb_rotor_frozen.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=4]}

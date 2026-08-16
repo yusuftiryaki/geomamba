@@ -1,0 +1,4 @@
+extends: [rb_mamba.yaml]
+name: rb-mamba-frozen
+model:
+  freeze_interface: true   # free Linear embed+head, never trained
