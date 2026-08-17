@@ -1,0 +1,324 @@
+# (d) FULL GEOMETRIC — the rung that was planned, never built, and is now built.
+# Equivariance is verified numerically before training (tests/test_equivariance.py):
+#   full_geo 3e-16..1e-15 | old "fullgeo" (geo_proj) 0.93 | rotor+slot 0.28 | mamba 1.08
+#
+# Two corrections to the earlier protocol:
+#  1. GENUINELY few-shot. N=300 x 257 steps is ~77k supervised transitions --
+#     not a data-scarce regime, so an inductive bias had nothing to buy. N=10
+#     is 2.5k transitions. If the bias helps anywhere, it helps here.
+#  2. Every run also scores a rotated test set (--rot-test). full_geo should
+#     show rot_gap ~ 1.0 by construction; the others should not. That is a
+#     built-in validity check on trained models, not just at init.
+#
+# Arms (parameter-matched within +5.5%):
+#   mamba      free embedding baseline                128.2k
+#   mambaslot  slotting, no geometric transition      125.1k
+#   rotorslot  slotting + rotor, non-equivariant rest 128.9k
+#   fullgeo    (d): equivariant end to end + gp       135.3k
+#   fullgeonb  (d) without the geometric product      128.5k
+# Run with Save & Run All, T4 x2. ~3 h.
+datasets:
+  - {system: rigid_body, out: data/rigid_body.npz, n_train: 3000}
+  - {system: rigid_body, out: data/rigid_body_anom.npz, anomalous: true}
+
+runs:
+  - {name: fg-mamba-n10-s0, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=10, seed=0]}
+  - {name: fg-mambaslot-n10-s0, config: configs/exp/rb_mamba_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=10, seed=0]}
+  - {name: fg-rotorslot-n10-s0, config: configs/exp/rb_rotor_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=10, seed=0]}
+  - {name: fg-fullgeo-n10-s0, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=10, seed=0]}
+  - {name: fg-fullgeonb-n10-s0, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=10, seed=0]}
+  - {name: fg-mamba-n10-s1, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=10, seed=1]}
+  - {name: fg-mambaslot-n10-s1, config: configs/exp/rb_mamba_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=10, seed=1]}
+  - {name: fg-rotorslot-n10-s1, config: configs/exp/rb_rotor_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=10, seed=1]}
+  - {name: fg-fullgeo-n10-s1, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=10, seed=1]}
+  - {name: fg-fullgeonb-n10-s1, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=10, seed=1]}
+  - {name: fg-mamba-n10-s2, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=10, seed=2]}
+  - {name: fg-mambaslot-n10-s2, config: configs/exp/rb_mamba_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=10, seed=2]}
+  - {name: fg-rotorslot-n10-s2, config: configs/exp/rb_rotor_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=10, seed=2]}
+  - {name: fg-fullgeo-n10-s2, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=10, seed=2]}
+  - {name: fg-fullgeonb-n10-s2, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=10, seed=2]}
+  - {name: fg-mamba-n10-s3, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=10, seed=3]}
+  - {name: fg-mambaslot-n10-s3, config: configs/exp/rb_mamba_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=10, seed=3]}
+  - {name: fg-rotorslot-n10-s3, config: configs/exp/rb_rotor_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=10, seed=3]}
+  - {name: fg-fullgeo-n10-s3, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=10, seed=3]}
+  - {name: fg-fullgeonb-n10-s3, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=10, seed=3]}
+  - {name: fg-mamba-n10-s4, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=10, seed=4]}
+  - {name: fg-mambaslot-n10-s4, config: configs/exp/rb_mamba_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=10, seed=4]}
+  - {name: fg-rotorslot-n10-s4, config: configs/exp/rb_rotor_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=10, seed=4]}
+  - {name: fg-fullgeo-n10-s4, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=10, seed=4]}
+  - {name: fg-fullgeonb-n10-s4, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=10, seed=4]}
+  - {name: fg-mamba-n30-s0, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=0]}
+  - {name: fg-mambaslot-n30-s0, config: configs/exp/rb_mamba_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=0]}
+  - {name: fg-rotorslot-n30-s0, config: configs/exp/rb_rotor_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=0]}
+  - {name: fg-fullgeo-n30-s0, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=0]}
+  - {name: fg-fullgeonb-n30-s0, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=0]}
+  - {name: fg-mamba-n30-s1, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=1]}
+  - {name: fg-mambaslot-n30-s1, config: configs/exp/rb_mamba_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=1]}
+  - {name: fg-rotorslot-n30-s1, config: configs/exp/rb_rotor_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=1]}
+  - {name: fg-fullgeo-n30-s1, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=1]}
+  - {name: fg-fullgeonb-n30-s1, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=1]}
+  - {name: fg-mamba-n30-s2, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=2]}
+  - {name: fg-mambaslot-n30-s2, config: configs/exp/rb_mamba_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=2]}
+  - {name: fg-rotorslot-n30-s2, config: configs/exp/rb_rotor_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=2]}
+  - {name: fg-fullgeo-n30-s2, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=2]}
+  - {name: fg-fullgeonb-n30-s2, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=2]}
+  - {name: fg-mamba-n30-s3, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=3]}
+  - {name: fg-mambaslot-n30-s3, config: configs/exp/rb_mamba_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=3]}
+  - {name: fg-rotorslot-n30-s3, config: configs/exp/rb_rotor_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=3]}
+  - {name: fg-fullgeo-n30-s3, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=3]}
+  - {name: fg-fullgeonb-n30-s3, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=3]}
+  - {name: fg-mamba-n30-s4, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=4]}
+  - {name: fg-mambaslot-n30-s4, config: configs/exp/rb_mamba_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=4]}
+  - {name: fg-rotorslot-n30-s4, config: configs/exp/rb_rotor_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=4]}
+  - {name: fg-fullgeo-n30-s4, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=4]}
+  - {name: fg-fullgeonb-n30-s4, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=4]}
+  - {name: fg-mamba-n100-s0, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=100, seed=0]}
+  - {name: fg-mambaslot-n100-s0, config: configs/exp/rb_mamba_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=100, seed=0]}
+  - {name: fg-rotorslot-n100-s0, config: configs/exp/rb_rotor_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=100, seed=0]}
+  - {name: fg-fullgeo-n100-s0, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=100, seed=0]}
+  - {name: fg-fullgeonb-n100-s0, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=100, seed=0]}
+  - {name: fg-mamba-n100-s1, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=100, seed=1]}
+  - {name: fg-mambaslot-n100-s1, config: configs/exp/rb_mamba_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=100, seed=1]}
+  - {name: fg-rotorslot-n100-s1, config: configs/exp/rb_rotor_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=100, seed=1]}
+  - {name: fg-fullgeo-n100-s1, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=100, seed=1]}
+  - {name: fg-fullgeonb-n100-s1, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=100, seed=1]}
+  - {name: fg-mamba-n100-s2, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=100, seed=2]}
+  - {name: fg-mambaslot-n100-s2, config: configs/exp/rb_mamba_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=100, seed=2]}
+  - {name: fg-rotorslot-n100-s2, config: configs/exp/rb_rotor_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=100, seed=2]}
+  - {name: fg-fullgeo-n100-s2, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=100, seed=2]}
+  - {name: fg-fullgeonb-n100-s2, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=100, seed=2]}
+  - {name: fg-mamba-n100-s3, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=100, seed=3]}
+  - {name: fg-mambaslot-n100-s3, config: configs/exp/rb_mamba_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=100, seed=3]}
+  - {name: fg-rotorslot-n100-s3, config: configs/exp/rb_rotor_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=100, seed=3]}
+  - {name: fg-fullgeo-n100-s3, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=100, seed=3]}
+  - {name: fg-fullgeonb-n100-s3, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=100, seed=3]}
+  - {name: fg-mamba-n100-s4, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=100, seed=4]}
+  - {name: fg-mambaslot-n100-s4, config: configs/exp/rb_mamba_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=100, seed=4]}
+  - {name: fg-rotorslot-n100-s4, config: configs/exp/rb_rotor_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=100, seed=4]}
+  - {name: fg-fullgeo-n100-s4, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=100, seed=4]}
+  - {name: fg-fullgeonb-n100-s4, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=100, seed=4]}
+  - {name: fg-mamba-n300-s0, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=0]}
+  - {name: fg-mambaslot-n300-s0, config: configs/exp/rb_mamba_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=0]}
+  - {name: fg-rotorslot-n300-s0, config: configs/exp/rb_rotor_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=0]}
+  - {name: fg-fullgeo-n300-s0, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=0]}
+  - {name: fg-fullgeonb-n300-s0, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=0]}
+  - {name: fg-mamba-n300-s1, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=1]}
+  - {name: fg-mambaslot-n300-s1, config: configs/exp/rb_mamba_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=1]}
+  - {name: fg-rotorslot-n300-s1, config: configs/exp/rb_rotor_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=1]}
+  - {name: fg-fullgeo-n300-s1, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=1]}
+  - {name: fg-fullgeonb-n300-s1, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=1]}
+  - {name: fg-mamba-n300-s2, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=2]}
+  - {name: fg-mambaslot-n300-s2, config: configs/exp/rb_mamba_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=2]}
+  - {name: fg-rotorslot-n300-s2, config: configs/exp/rb_rotor_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=2]}
+  - {name: fg-fullgeo-n300-s2, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=2]}
+  - {name: fg-fullgeonb-n300-s2, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=2]}
+  - {name: fg-mamba-n300-s3, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=3]}
+  - {name: fg-mambaslot-n300-s3, config: configs/exp/rb_mamba_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=3]}
+  - {name: fg-rotorslot-n300-s3, config: configs/exp/rb_rotor_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=3]}
+  - {name: fg-fullgeo-n300-s3, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=3]}
+  - {name: fg-fullgeonb-n300-s3, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=3]}
+  - {name: fg-mamba-n300-s4, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=4]}
+  - {name: fg-mambaslot-n300-s4, config: configs/exp/rb_mamba_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=4]}
+  - {name: fg-rotorslot-n300-s4, config: configs/exp/rb_rotor_slot.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=4]}
+  - {name: fg-fullgeo-n300-s4, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=4]}
+  - {name: fg-fullgeonb-n300-s4, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=4]}

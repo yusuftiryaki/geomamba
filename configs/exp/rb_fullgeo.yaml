@@ -1,0 +1,8 @@
+extends: [rb_mamba.yaml]
+name: rb-fullgeo
+model:
+  variant: full_geo   # equivariance verified to 1e-15 (tests/test_equivariance.py)
+  d_model: 104        # param match: 135.3k vs rotor 129.6k (+4.4%), mamba76 128.2k (+5.5%)
+  geo_embed: true
+  slot_grade: 2
+  geo_bilinear: true

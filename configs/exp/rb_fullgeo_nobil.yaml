@@ -1,0 +1,7 @@
+extends: [rb_fullgeo.yaml]
+name: rb-fullgeo-nobil
+model:
+  # same equivariant pipeline WITHOUT the geometric product: isolates what the
+  # algebra's multiplication actually buys, separately from equivariance
+  d_model: 112        # param match: 128.5k vs mamba76 128.1k (+0.3%)
+  geo_bilinear: false
