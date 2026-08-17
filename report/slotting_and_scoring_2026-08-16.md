@@ -20,11 +20,33 @@ Bu, kontrol grid'inin teşhisini doğruluyor: kısıt gizli state'te, metrik
 gözlem uzayındaydı; ikisi arasındaki bağı serbest embedding koparıyordu.
 Girdiyi doğru grade yuvasına koymak bağı kuruyor.
 
-**Ama fullgeo (Clifford-linear kanal karışımı) BOZDU:** 1-adım MSE 10× kötü
-(7.6e-4 vs 1.2e-4), rollout da kötü. Grade-koruyucu karışım, aynı parametre
-bütçesinde çok daha az ifade gücü veriyor (grade başına tek matris) ve
-görünüşe göre SiLU gate ile de uyumsuz. Yani "daha çok geometri her zaman
-daha iyi" değil — **doğru yere geometri.**
+**~~Ama fullgeo (Clifford-linear kanal karışımı) BOZDU~~ — BU SONUÇ GEÇERSİZ.**
+
+Orijinal metin: *"1-adım MSE 10× kötü (7.6e-4 vs 1.2e-4)… daha çok geometri
+her zaman daha iyi değil."* İki hata var:
+
+1. **Rakam yanlış:** 10× değil **6.3×** (7.6e-4 / 1.2e-4). h100'de 1.9×.
+2. **Daha ciddisi, o kol "full geometric" değildi.** `geo_proj` yalnızca
+   giriş/çıkış projeksiyonlarını Clifford-lineer yapıyor. Eleman-bazlı
+   `u * silu(z)` kapısı, bıçak-başına ayrı filtreleyen depthwise conv ve
+   düzleştirilmiş bıçaklar üzerinde çalışan SSM projeksiyonları **olduğu gibi
+   kalıyordu** — ve planın (d) basamağındaki asıl bileşen, geometrik-çarpım
+   bilineer katmanı, hiç yazılmamıştı.
+
+Ölçtük (`tests/test_equivariance.py`, girdiyi döndür–çıktı dönüyor mu):
+
+| model | eşdeğişkenlik hatası (göreli) |
+|---|---|
+| gerçek (d) `full_geo` | **3e-16 … 1e-15** |
+| eski "fullgeo" (`geo_proj`) | 0.93 |
+| rotor+slot (c) | 0.28 |
+| vanilla mamba | 1.08 |
+
+Eski kol eşdeğişkenlik bakımından vanilla Mamba'dan neredeyse ayırt edilemez.
+Yani ölçtüğümüz şey "geometrinin bedeli" değil, **kısıtlı lineer katmanların
+serbest bir kapıyla kavga etmesinin** bedeliydi — iki dünyanın da kötüsü.
+Bu satır, "Clifford karışımı zararlı" iddiasının dayanağı olarak
+**kullanılamaz**; gerçek (d) ayrıca test edilmelidir.
 
 Kısıt: enerji kaymasında std'ler büyük (slot ±1.78), 3 seed yetersiz.
 Doğrulama için seed sayısı artırılmalı ve N=100 hücresi eklenmeli.
@@ -114,8 +136,11 @@ Veriler üç ayrı iddiayı ayrıştırdı:
 2. **Geçiş kısıtı (rotor):** TEK BAŞINA YETERSİZ — serbest embedding'le
    çalışmıyor (kontrol grid'i, D2'de net olumsuz), doğru temsille birlikte
    çalışıyor. Kısıtın işe yaraması temsile bağımlı.
-3. **Çarpım/karışım geometrisi (Clifford-linear):** ŞU HALİYLE ZARARLI —
-   ifade gücünü çok kısıyor.
+3. **Çarpım/karışım geometrisi (Clifford-linear):** ~~ŞU HALİYLE ZARARLI~~ —
+   **HÜKÜM GERİ ÇEKİLDİ.** Test edilen kol eşdeğişken değildi (hata 0.93,
+   vanilla mamba 1.08) ve geometrik çarpım katmanını hiç içermiyordu.
+   Gerçek (d) — `variant: full_geo`, eşdeğişkenliği 1e-15'te doğrulanmış —
+   henüz eğitilmedi. Bu iddia hakkında elimizde veri YOK.
 4. **Bonus, planlanmamış (düzeltilmiş haliyle):** korunan büyüklüğü doğrudan
    izlemek, tahmin-artığı izlemekten iyi — ama sadece ölçüm gürültüsü düşükken
    (%1'e kadar anlamlı üstünlük, %5'te fark kapanıyor) ve sadece invaryantı

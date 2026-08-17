@@ -13,6 +13,7 @@ import torch.nn as nn
 
 from geomamba.algebra import Algebra
 from geomamba.models.blocks import MambaBlock
+from geomamba.models.geo_blocks import GeoBlock
 from geomamba.models.geo_layers import GeoEmbed, GeoHead, GradeRMSNorm
 
 
@@ -36,11 +37,13 @@ class ModelConfig:
     slot_grade: int = 2  # rigid-body omega and B fields are bivectors
     # controls for "is the slotting win geometric?" (report/preregistration_slot_controls.md)
     slot_blades: list[int] | None = None  # explicit slots; overrides slot_grade
+    geo_bilinear: bool = True  # full_geo: the geometric-product layer
     freeze_interface: bool = False  # freeze embedding + forecast head at init
     heads: list[str] = field(default_factory=lambda: ["forecast"])
 
 
 _VARIANT_TRANSITIONS = {"mamba": None, "mv_mamba": "mv", "rotor_mamba": "rotor", "mv8_mamba": "mv8"}
+_GEO_VARIANTS = ("full_geo",)  # built from GeoBlock, not MambaBlock
 
 
 def _make_block(cfg: ModelConfig) -> nn.Module:
@@ -96,6 +99,38 @@ class Backbone(nn.Module):
         return self._norm(self.final_norm, h)
 
 
+class GeoBackbone(nn.Module):
+    """Variant (d): the multivector shape is never flattened, so no layer ever
+    sees a blade coefficient as a free coordinate."""
+
+    def __init__(self, cfg: ModelConfig):
+        super().__init__()
+        al = Algebra.get(3, 0)
+        if cfg.d_model % al.dim:
+            raise ValueError("full_geo needs d_model divisible by 8")
+        if not cfg.geo_embed:
+            raise ValueError("full_geo needs geo_embed: the input must be typed")
+        n_ch = cfg.d_model // al.dim
+        self.embed = GeoEmbed(
+            al, cfg.n_features, n_ch, grade=cfg.slot_grade, blades=cfg.slot_blades
+        )
+        self.norms = nn.ModuleList(GradeRMSNorm(al, n_ch) for _ in range(cfg.n_layers))
+        self.blocks = nn.ModuleList(
+            GeoBlock(al, n_ch, expand=cfg.expand, d_conv=cfg.d_conv,
+                     scan_mode=cfg.scan_mode, dt_min=cfg.dt_min, dt_max=cfg.dt_max,
+                     lambda_init=cfg.lambda_init, bilinear=cfg.geo_bilinear)
+            for _ in range(cfg.n_layers)
+        )
+        self.final_norm = GradeRMSNorm(al, n_ch)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """x: [B, L, F] -> h: [B, L, C, dim]"""
+        h = self.embed(x)
+        for norm, block in zip(self.norms, self.blocks):
+            h = h + block(norm(h))
+        return self.final_norm(h)
+
+
 class _GeoHeadFlat(nn.Module):
     """GeoHead on a flat [B, L, d_model] hidden state."""
 
@@ -114,10 +149,17 @@ class GeoMamba(nn.Module):
     def __init__(self, cfg: ModelConfig):
         super().__init__()
         self.cfg = cfg
-        self.backbone = Backbone(cfg)
+        self.full_geo = cfg.variant in _GEO_VARIANTS
+        self.backbone = GeoBackbone(cfg) if self.full_geo else Backbone(cfg)
         self.heads = nn.ModuleDict()
         if "forecast" in cfg.heads:
-            if cfg.geo_embed:
+            if self.full_geo:
+                al = Algebra.get(3, 0)
+                self.heads["forecast"] = GeoHead(
+                    al, cfg.d_model // al.dim, cfg.n_features,
+                    grade=cfg.slot_grade, blades=cfg.slot_blades,
+                )
+            elif cfg.geo_embed:
                 al = Algebra.get(3, 0)
                 self.heads["forecast"] = _GeoHeadFlat(
                     al, cfg.d_model // al.dim, cfg.n_features, cfg.slot_grade,
@@ -126,6 +168,8 @@ class GeoMamba(nn.Module):
             else:
                 self.heads["forecast"] = nn.Linear(cfg.d_model, cfg.n_features)
         if "anomaly" in cfg.heads:
+            if self.full_geo:
+                raise ValueError("full_geo has no anomaly head yet")
             self.heads["anomaly"] = nn.Linear(cfg.d_model, 1)
         if cfg.freeze_interface:
             # `frozen` control: the input/output interface stays at its random
