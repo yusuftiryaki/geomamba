@@ -1,0 +1,237 @@
+# LR TARAMASI — (d) bulgusunun tek ciddi geçerlilik tehdidini kapatır.
+#
+# fullgeo_sonuc raporundaki kazanç tek bir hiperparametre ayarıyla ölçüldü.
+# Eşdeğişken modeller varsayılan lr'yi (3e-4) baseline'dan daha çok seviyor
+# olabilir. Burada her kol KENDİ en iyi lr'sinde koşuyor; karşılaştırma
+# en-iyi-vs-en-iyi olacak.
+#
+# KRİTİK: lr seçimi `best_val_mse` ile yapılacak, test_mse ile DEĞİL.
+# Test setine bakarak hiperparametre seçmek sonucu geçersiz kılar.
+#
+# N=30 (etkinin büyük olduğu az-veri rejimi) ve N=300 (etkinin daraldığı
+# rejim) birlikte: iddia farkın BÜYÜKLÜĞÜ değil, N ile DARALMASI hakkında.
+# Sadece tek N'de tararsak daralmanın lr artefaktı olmadığını gösteremeyiz.
+#
+# 3 kol x 4 lr x 2 N x 3 seed = 72 kosu, T4 x2'de ~2.5 saat.
+# Save & Run All ile calistirin.
+datasets:
+  - {system: rigid_body, out: data/rigid_body.npz, n_train: 3000}
+  - {system: rigid_body, out: data/rigid_body_anom.npz, anomalous: true}
+
+runs:
+  - {name: lr-mamba-n30-1e4-s0, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=0, trainer.lr=0.0001]}
+  - {name: lr-mamba-n30-3e4-s0, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=0, trainer.lr=0.0003]}
+  - {name: lr-mamba-n30-1e3-s0, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=0, trainer.lr=0.001]}
+  - {name: lr-mamba-n30-3e3-s0, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=0, trainer.lr=0.003]}
+  - {name: lr-fullgeonb-n30-1e4-s0, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=0, trainer.lr=0.0001]}
+  - {name: lr-fullgeonb-n30-3e4-s0, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=0, trainer.lr=0.0003]}
+  - {name: lr-fullgeonb-n30-1e3-s0, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=0, trainer.lr=0.001]}
+  - {name: lr-fullgeonb-n30-3e3-s0, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=0, trainer.lr=0.003]}
+  - {name: lr-fullgeo-n30-1e4-s0, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=0, trainer.lr=0.0001]}
+  - {name: lr-fullgeo-n30-3e4-s0, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=0, trainer.lr=0.0003]}
+  - {name: lr-fullgeo-n30-1e3-s0, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=0, trainer.lr=0.001]}
+  - {name: lr-fullgeo-n30-3e3-s0, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=0, trainer.lr=0.003]}
+  - {name: lr-mamba-n30-1e4-s1, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=1, trainer.lr=0.0001]}
+  - {name: lr-mamba-n30-3e4-s1, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=1, trainer.lr=0.0003]}
+  - {name: lr-mamba-n30-1e3-s1, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=1, trainer.lr=0.001]}
+  - {name: lr-mamba-n30-3e3-s1, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=1, trainer.lr=0.003]}
+  - {name: lr-fullgeonb-n30-1e4-s1, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=1, trainer.lr=0.0001]}
+  - {name: lr-fullgeonb-n30-3e4-s1, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=1, trainer.lr=0.0003]}
+  - {name: lr-fullgeonb-n30-1e3-s1, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=1, trainer.lr=0.001]}
+  - {name: lr-fullgeonb-n30-3e3-s1, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=1, trainer.lr=0.003]}
+  - {name: lr-fullgeo-n30-1e4-s1, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=1, trainer.lr=0.0001]}
+  - {name: lr-fullgeo-n30-3e4-s1, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=1, trainer.lr=0.0003]}
+  - {name: lr-fullgeo-n30-1e3-s1, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=1, trainer.lr=0.001]}
+  - {name: lr-fullgeo-n30-3e3-s1, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=1, trainer.lr=0.003]}
+  - {name: lr-mamba-n30-1e4-s2, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=2, trainer.lr=0.0001]}
+  - {name: lr-mamba-n30-3e4-s2, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=2, trainer.lr=0.0003]}
+  - {name: lr-mamba-n30-1e3-s2, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=2, trainer.lr=0.001]}
+  - {name: lr-mamba-n30-3e3-s2, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=2, trainer.lr=0.003]}
+  - {name: lr-fullgeonb-n30-1e4-s2, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=2, trainer.lr=0.0001]}
+  - {name: lr-fullgeonb-n30-3e4-s2, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=2, trainer.lr=0.0003]}
+  - {name: lr-fullgeonb-n30-1e3-s2, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=2, trainer.lr=0.001]}
+  - {name: lr-fullgeonb-n30-3e3-s2, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=2, trainer.lr=0.003]}
+  - {name: lr-fullgeo-n30-1e4-s2, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=2, trainer.lr=0.0001]}
+  - {name: lr-fullgeo-n30-3e4-s2, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=2, trainer.lr=0.0003]}
+  - {name: lr-fullgeo-n30-1e3-s2, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=2, trainer.lr=0.001]}
+  - {name: lr-fullgeo-n30-3e3-s2, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=30, seed=2, trainer.lr=0.003]}
+  - {name: lr-mamba-n300-1e4-s0, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=0, trainer.lr=0.0001]}
+  - {name: lr-mamba-n300-3e4-s0, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=0, trainer.lr=0.0003]}
+  - {name: lr-mamba-n300-1e3-s0, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=0, trainer.lr=0.001]}
+  - {name: lr-mamba-n300-3e3-s0, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=0, trainer.lr=0.003]}
+  - {name: lr-fullgeonb-n300-1e4-s0, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=0, trainer.lr=0.0001]}
+  - {name: lr-fullgeonb-n300-3e4-s0, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=0, trainer.lr=0.0003]}
+  - {name: lr-fullgeonb-n300-1e3-s0, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=0, trainer.lr=0.001]}
+  - {name: lr-fullgeonb-n300-3e3-s0, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=0, trainer.lr=0.003]}
+  - {name: lr-fullgeo-n300-1e4-s0, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=0, trainer.lr=0.0001]}
+  - {name: lr-fullgeo-n300-3e4-s0, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=0, trainer.lr=0.0003]}
+  - {name: lr-fullgeo-n300-1e3-s0, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=0, trainer.lr=0.001]}
+  - {name: lr-fullgeo-n300-3e3-s0, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=0, trainer.lr=0.003]}
+  - {name: lr-mamba-n300-1e4-s1, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=1, trainer.lr=0.0001]}
+  - {name: lr-mamba-n300-3e4-s1, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=1, trainer.lr=0.0003]}
+  - {name: lr-mamba-n300-1e3-s1, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=1, trainer.lr=0.001]}
+  - {name: lr-mamba-n300-3e3-s1, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=1, trainer.lr=0.003]}
+  - {name: lr-fullgeonb-n300-1e4-s1, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=1, trainer.lr=0.0001]}
+  - {name: lr-fullgeonb-n300-3e4-s1, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=1, trainer.lr=0.0003]}
+  - {name: lr-fullgeonb-n300-1e3-s1, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=1, trainer.lr=0.001]}
+  - {name: lr-fullgeonb-n300-3e3-s1, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=1, trainer.lr=0.003]}
+  - {name: lr-fullgeo-n300-1e4-s1, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=1, trainer.lr=0.0001]}
+  - {name: lr-fullgeo-n300-3e4-s1, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=1, trainer.lr=0.0003]}
+  - {name: lr-fullgeo-n300-1e3-s1, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=1, trainer.lr=0.001]}
+  - {name: lr-fullgeo-n300-3e3-s1, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=1, trainer.lr=0.003]}
+  - {name: lr-mamba-n300-1e4-s2, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=2, trainer.lr=0.0001]}
+  - {name: lr-mamba-n300-3e4-s2, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=2, trainer.lr=0.0003]}
+  - {name: lr-mamba-n300-1e3-s2, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=2, trainer.lr=0.001]}
+  - {name: lr-mamba-n300-3e3-s2, config: configs/exp/rb_mamba.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=2, trainer.lr=0.003]}
+  - {name: lr-fullgeonb-n300-1e4-s2, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=2, trainer.lr=0.0001]}
+  - {name: lr-fullgeonb-n300-3e4-s2, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=2, trainer.lr=0.0003]}
+  - {name: lr-fullgeonb-n300-1e3-s2, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=2, trainer.lr=0.001]}
+  - {name: lr-fullgeonb-n300-3e3-s2, config: configs/exp/rb_fullgeo_nobil.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=2, trainer.lr=0.003]}
+  - {name: lr-fullgeo-n300-1e4-s2, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=2, trainer.lr=0.0001]}
+  - {name: lr-fullgeo-n300-3e4-s2, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=2, trainer.lr=0.0003]}
+  - {name: lr-fullgeo-n300-1e3-s2, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=2, trainer.lr=0.001]}
+  - {name: lr-fullgeo-n300-3e3-s2, config: configs/exp/rb_fullgeo.yaml,
+     eval_args: [--rot-test],
+     overrides: [data.n_train=300, seed=2, trainer.lr=0.003]}

@@ -61,7 +61,13 @@ def main() -> None:
     test_ds = TrajectoryDataset(raw["test"], mean, std)
     loader = DataLoader(test_ds, batch_size=16)
 
-    result: dict = {"run": str(args.run), "ckpt_step": int(ckpt.get("step", -1))}
+    # best_val_mse comes from the checkpoint so that model selection (e.g. an
+    # lr sweep) can be done on VALIDATION and never on the test set.
+    result: dict = {
+        "run": str(args.run),
+        "ckpt_step": int(ckpt.get("step", -1)),
+        "best_val_mse": float(ckpt["val_mse"]) if "val_mse" in ckpt else float("nan"),
+    }
     result["test_mse"] = M.teacher_forced_mse(model, loader)
     result["persistence_mse"] = M.persistence_mse(loader)
     result.update(
