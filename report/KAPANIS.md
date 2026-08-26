@@ -1,6 +1,6 @@
 # GeoMamba — Kapanış Notu
 
-**Süre:** 15–24 Ağu 2026. **Durum:** durduruldu.
+**Süre:** 15–26 Ağu 2026. **Durum:** kapatıldı.
 
 ## 1. Test edilen hipotez
 
@@ -20,7 +20,7 @@ kaotik negatif kontrolde (Lorenz) avantaj olmamalı.
 | Rotor kısıtı (Clifford yapısı **state geçişinde**) yardım eder | **ÇÜRÜTÜLDÜ.** İki sistemde, parametre eşitlenmiş, negatif kontrollü. Doğru temsille birlikte bile katkısı ölçülemedi. |
 | Geometrik girdi tiplemesi (slotlama) **geometrik olduğu için** yardım eder | **ÇÜRÜTÜLDÜ.** Aynı parametre sayısına sahip ama geometrik anlamı olmayan `scatter` kolu ona yetişti. |
 | Mimarilerimiz geometriyi kullanıyor | **ÇÜRÜTÜLDÜ.** `rot_gap` 7–9 (ideal 1.0, taban 1.07); dahası veriyle **büyüyor** — kanonik çerçeveyi ezberliyorlar. |
-| Uçtan uca **eşdeğişkenlik** veri verimliliği satın alır | **KOŞULLU DESTEKLENDİ** — aşağıdaki uyarıyla. |
+| Uçtan uca **eşdeğişkenlik** veri verimliliği satın alır | **DESTEKLENDİ** — lr taramasıyla doğrulandı (§2.1). |
 | Geometri **fiziksel tutarlılık** getirir | **DESTEKLENMEDİ.** Simetri korunum yasası vermez; eşdeğişken modelde enerji kayması daha da kötüleşti. |
 | Geometrik model anomalide ayrışır | **DESTEKLENMEDİ.** Hiçbir turda mimari ayrışması bulunamadı. |
 
@@ -33,13 +33,42 @@ yani inductive bias'ın önceden yazılmış imzasıyla. N=10'da baseline
 model 3–8× üstündeydi. `fullgeo` N=30'da, `mamba`'nın N=300'de ulaştığı yere
 geldi (~10× veri verimliliği).
 
-**Ama bu bulgu tek bir öğrenme oranıyla ölçüldü.** Kolları kendi en iyi
-lr'sinde karşılaştıran tarama (`configs/grid/m7_lr_sweep.yaml`) kuruldu ama
-tamamlanmadı. **Bu tarama bitmeden bulgu kesin sayılmamalıdır.**
+### 2.1 LR taraması — tehdit kapandı, üstelik ters yönde
 
-Ayrıca kazancın kaynağı geometrik *çarpım* değil, eşdeğişkenliğin kendisi:
-çarpım katmanı olmayan, parametresi tam eşleşen versiyon neredeyse aynı
-sonucu verdi.
+Bulgu tek bir öğrenme oranıyla (3e-4) ölçülmüştü; eşdeğişken modellerin o
+ayarı baseline'dan çok sevmiş olma ihtimali tek ciddi tehditti. 72 koşuluk
+tarama tamamlandı (`configs/grid/m7_lr_sweep.yaml`). lr seçimi **validation**
+ile yapıldı, test setine bakılmadan.
+
+**Baseline'ın en iyi lr'si N=30'da 3e-4 çıktı — yani tam da kullandığımız
+varsayılan. Eşdeğişken modeller ise 3e-3 istiyor, 10× daha büyük.** Yani
+orijinal gridde eşdeğişken modeller kayırılmamış, **cezalandırılmıştı**.
+
+Her kol kendi en iyi lr'sinde, test medyanı:
+
+| N | mamba | fullgeonb | fullgeo | kazanç |
+|---|---|---|---|---|
+| 30 | 4.11e-4 @3e-4 | 2.36e-5 @3e-3 | 2.39e-5 @3e-3 | **17.4× / 17.2×** |
+| 300 | 3.55e-5 @3e-3 | 5.92e-6 @3e-3 | 6.34e-6 @3e-3 | **6.0× / 5.6×** |
+
+Önceki (herkes 3e-4'te): N=30 7.2×, N=300 3.9×. **Adil karşılaştırmada etki
+büyüdü** ve N ile daralma imzası korundu (17× → 6×).
+
+`rot_gap` değişmedi: eşdeğişken kollar 0.99–1.04, baseline 3.5–6.8.
+
+**Kalan sınırlar:** 3e-3 tarama ızgarasının üst ucu; gerçek optimum daha
+yukarıda olabilir, dolayısıyla oranlar alt sınır sayılmalı. N=30'da baseline'ın
+optimumu iç noktada (3e-4), eşdeğişken kollarınki uçta — bu da 17×'i alt sınır
+yapar. Ayrıca `fullgeo`'nun bir seed'i 3e-3'te ıraksadı (test ≈ persistence):
+yüksek lr'de kararsızlık var, medyan bunu tolere ediyor, ortalama etmezdi.
+
+Kazancın kaynağı geometrik *çarpım* değil, eşdeğişkenliğin kendisi: çarpım
+katmanı olmayan, parametresi tam eşleşen `fullgeonb` her iki N'de de en iyi
+sonucu verdi. Cebirin çarpım yapısı — projenin adındaki şey — hiçbir yerde
+kendini ödetmedi.
+
+Ve tahmin dışına çıkmıyor: en iyi lr'de bile rollout h100 ve enerji kaymasında
+baseline önde (N=300: h100 0.45 vs 1.01, enerji 1.66 vs 4.64).
 
 ## 3. Hiç ulaşamadığımız yer
 
@@ -87,8 +116,7 @@ Tüm çalışma sentetik, gürültüsüz, tam-gözlemli üç oyuncak sistemde ka
 
 ## 6. Devam edilecekse — en kısa yol
 
-1. **LR taramasını bitir.** Kurulu, hazır. Geçmezse proje burada kapanır ve
-   yukarıdaki pozitif bulgu geri çekilir.
+1. ~~LR taramasını bitir.~~ **Yapıldı, geçti** (§2.1).
 2. **Sentetiği bırak.** Doğrudan üç fazlı gerçek veriye geç: Clarke dönüşümü
    αβ vektörünü grade-1'e koyar, dq çerçevesi zaten bir rotordur. Geometri
    orada zorlama değil, gerçek.
@@ -101,7 +129,18 @@ Tüm çalışma sentetik, gürültüsüz, tam-gözlemli üç oyuncak sistemde ka
 
 ## 7. Tek cümlelik hüküm
 
-Clifford yapısını state geçişine gömme fikri çürütüldü; hayatta kalan şey
-literatürün zaten bildiği reçetenin (uçtan uca eşdeğişkenlik) yeni bir
-mimaride ölçülmüş hâli, ve o da henüz doğrulanmayı bekliyor — asıl hedefe,
-gerçek veriye hiç varılmadı.
+Clifford **çarpımını state geçişine gömme** fikri — projenin adındaki iddia —
+çürütüldü; hayatta kalan şey literatürün zaten bildiği reçetenin (uçtan uca
+eşdeğişkenlik) yeni bir mimaride ölçülmüş ve doğrulanmış hâli: az veride
+17×, çok veride 6× daha iyi tek-adım tahmini, ama uzun rollout ve korunumda
+kazanç yok — ve asıl hedefe, gerçek veriye hiç varılmadı.
+
+## 8. Son söz
+
+Proje, sorduğu soruya dürüst bir cevap üretti ve cevap büyük ölçüde "hayır"dı.
+Elde kalan tek pozitif, başlangıçtaki iddia değil onun komşusu; ve o bile
+tahmin görevinde, sentetik veride, tek sistemde geçerli. Buna karşılık geriye
+tekrar kullanılabilir bir mimari, bir tanı ölçütü (`rot_gap`) ve bir dizi
+temiz negatif sonuç kaldı. On günde bir hipotezi bu kadar net gömebilmek
+kötü bir sonuç değil; asıl maliyet, hedeften sapıp gerçek veriye hiç
+gitmemiş olmamız.
